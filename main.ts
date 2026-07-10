@@ -2,6 +2,7 @@ import { Editor, MarkdownView, Notice, Plugin, moment } from "obsidian";
 import { DEFAULT_SETTINGS, DoneMoverSettings, MoveOptions, MoveResult } from "./src/types";
 import { DoneMoverSettingTab } from "./src/settings";
 import { moveCompletedTasks, moveSelectedTasks } from "./src/mover";
+import { isPathExcluded } from "./src/exclusions";
 import { Lang, Strings, getStrings } from "./src/i18n";
 
 /** Delay before the auto mode reacts, so it does not interrupt typing. */
@@ -122,6 +123,7 @@ export default class DoneMoverPlugin extends Plugin {
 			this.autoTimer = null;
 			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 			if (!view) return;
+			if (isPathExcluded(view.file?.path ?? "", this.settings.excludedPaths)) return;
 			const editor = view.editor;
 			const result = moveCompletedTasks(editor.getValue(), this.moveOptions());
 			if (result.movedCount > 0) {
