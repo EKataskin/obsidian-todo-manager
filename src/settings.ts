@@ -48,5 +48,22 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+
+		new Setting(containerEl)
+			.setName(s.settingExcludedName)
+			.setDesc(s.settingExcludedDesc)
+			.addTextArea((text) => {
+				text
+					.setPlaceholder("Templates\nArchiv/2025\nDaily/Scratch.md")
+					.setValue(this.plugin.settings.excludedPaths.join("\n"))
+					.onChange(async (value) => {
+						this.plugin.settings.excludedPaths = value
+							.split("\n")
+							.map((line) => line.trim())
+							.filter((line) => line.length > 0);
+						await this.plugin.saveSettings();
+					});
+				text.inputEl.rows = 4;
+			});
 	}
 }

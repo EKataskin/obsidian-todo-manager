@@ -7,12 +7,15 @@ export interface DoneMoverSettings {
 	doneHeading: string;
 	/** When on, a "✅ YYYY-MM-DD" completion date is appended to moved checked lines. */
 	appendCompletionDate: boolean;
+	/** Vault paths (folders or files) in which auto mode stays inactive. */
+	excludedPaths: string[];
 }
 
 export const DEFAULT_SETTINGS: DoneMoverSettings = {
 	autoMode: false,
 	doneHeading: "Done",
 	appendCompletionDate: true,
+	excludedPaths: [],
 };
 
 /** Options consumed by the pure mover functions. */

@@ -16,6 +16,8 @@ export interface Strings {
 	settingHeadingDesc: string;
 	settingDateName: string;
 	settingDateDesc: string;
+	settingExcludedName: string;
+	settingExcludedDesc: string;
 }
 
 const en: Strings = {
@@ -34,6 +36,10 @@ const en: Strings = {
 		"Name of the target heading that completed tasks are moved under.",
 	settingDateName: "Append completion date",
 	settingDateDesc: 'Appends "✅ YYYY-MM-DD" to every moved, checked line.',
+	settingExcludedName: "Excluded folders/files",
+	settingExcludedDesc:
+		"One vault path per line. Auto mode stays inactive in these folders " +
+		"(including subfolders) and files. Manual commands still work.",
 };
 
 const de: Strings = {
@@ -52,6 +58,10 @@ const de: Strings = {
 		"Name der Ziel-Überschrift, unter die erledigte Aufgaben verschoben werden.",
 	settingDateName: "Erledigt-Datum anhängen",
 	settingDateDesc: 'Hängt "✅ JJJJ-MM-TT" an jede verschobene, abgehakte Zeile an.',
+	settingExcludedName: "Ausgeschlossene Ordner/Dateien",
+	settingExcludedDesc:
+		"Ein Vault-Pfad pro Zeile. Der Auto-Modus bleibt in diesen Ordnern " +
+		"(inklusive Unterordnern) und Dateien inaktiv. Manuelle Befehle funktionieren weiterhin.",
 };
 
 const LANGUAGES: Record<Lang, Strings> = { en, de };
