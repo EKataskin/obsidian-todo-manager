@@ -23,6 +23,9 @@ German when Obsidian is set to German.
 - **Auto mode** (optional): as soon as a task is checked, it moves to Done
   automatically — but only when the task **and all of its sub-tasks** are
   checked.
+- **Excluded folders/files** (optional): auto mode stays inactive in the
+  configured vault paths (including subfolders); manual commands still work
+  there.
 - Sub-tasks move along with their parent; indentation is preserved.
 - Optionally appends a completion date `✅ YYYY-MM-DD` to each moved, checked
   line (no duplicate dates).
@@ -44,6 +47,16 @@ German when Obsidian is set to German.
 2. Right-click in the editor and choose an action, or run the matching
    command from the command palette.
 3. Completed tasks are moved under the configured Done heading.
+
+## Disclosures
+
+- The plugin works entirely offline and makes **no network requests**.
+- It collects **no telemetry** and stores no data outside your vault.
+- It only modifies the note in which a move action runs (manually or via
+  auto mode) and never touches other files.
+- Settings are stored in the plugin's `data.json` inside your vault's
+  configuration folder.
+- No account, payment, or external service is required.
 
 ## Build from source
 

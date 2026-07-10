@@ -25,6 +25,9 @@ Englisch, Deutsch wenn Obsidian auf Deutsch eingestellt ist.
 - **Auto-Modus** (optional): Sobald eine Aufgabe abgehakt wird, wandert sie
   automatisch nach Done — aber nur, wenn die Aufgabe **und alle ihre
   Unteraufgaben** abgehakt sind.
+- **Ausgeschlossene Ordner/Dateien** (optional): In den konfigurierten
+  Vault-Pfaden (inklusive Unterordnern) bleibt der Auto-Modus inaktiv;
+  manuelle Befehle funktionieren dort weiterhin.
 - Unteraufgaben wandern als Block mit; die Einrückung bleibt erhalten.
 - Optional wird an jede verschobene, abgehakte Zeile ein Erledigt-Datum
   `✅ JJJJ-MM-TT` angehängt (keine doppelten Datumsangaben).
@@ -45,6 +48,18 @@ Englisch, Deutsch wenn Obsidian auf Deutsch eingestellt ist.
 2. Im Editor rechtsklicken und eine Aktion wählen — oder den passenden
    Befehl über die Befehlspalette ausführen.
 3. Erledigte Aufgaben wandern unter die konfigurierte Done-Überschrift.
+
+## Offenlegung
+
+- Das Plugin arbeitet vollständig offline und stellt **keine
+  Netzwerkanfragen**.
+- Es sammelt **keine Telemetrie** und speichert keine Daten außerhalb des
+  Vaults.
+- Es verändert nur die Notiz, in der eine Verschiebe-Aktion ausgeführt wird
+  (manuell oder per Auto-Modus), und fasst keine anderen Dateien an.
+- Die Einstellungen liegen in der `data.json` des Plugins im
+  Konfigurationsordner des Vaults.
+- Kein Konto, keine Zahlung, kein externer Dienst erforderlich.
 
 ## Aus dem Quellcode bauen
 
