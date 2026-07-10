@@ -37,6 +37,7 @@ Englisch, Deutsch wenn Obsidian auf Deutsch eingestellt ist.
 | Auto-Modus | Erledigte Aufgaben automatisch verschieben | aus |
 | Done-Überschrift | Name der Ziel-Überschrift | `Done` |
 | Erledigt-Datum anhängen | `✅`-Datum an verschobene Zeilen anhängen | an |
+| Ausgeschlossene Ordner/Dateien | Vault-Pfade (einer pro Zeile), in denen der Auto-Modus inaktiv bleibt | leer |
 
 ## Nutzung
 
@@ -77,12 +78,13 @@ Ein gepushter Git-Tag löst den GitHub-Actions-Workflow in
 | `src/taskParser.ts` | Markdown-Parsing, Abschnitts- und Block-Erkennung |
 | `src/mover.ts` | Reine Verschiebe-Logik (`moveCompletedTasks`, `moveSelectedTasks`) |
 | `src/settings.ts` | Einstellungs-Oberfläche |
+| `src/exclusions.ts` | Pfad-Ausschluss-Logik für den Auto-Modus |
 | `src/i18n.ts` | Lokalisierung der UI-Texte (Englisch / Deutsch) |
 | `src/types.ts` | Gemeinsame Typen und Standardwerte |
 | `src/*.test.ts` | Unit-Tests |
 
-`taskParser.ts` und `mover.ts` enthalten keine Obsidian-Abhängigkeiten und
-sind dadurch ohne laufendes Obsidian testbar.
+`taskParser.ts`, `mover.ts` und `exclusions.ts` enthalten keine
+Obsidian-Abhängigkeiten und sind dadurch ohne laufendes Obsidian testbar.
 
 ## Lizenz
 

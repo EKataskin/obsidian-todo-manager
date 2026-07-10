@@ -36,6 +36,7 @@ German when Obsidian is set to German.
 | Auto mode | Move completed tasks automatically | off |
 | Done heading | Name of the target heading | `Done` |
 | Append completion date | Append a `✅` date to moved lines | on |
+| Excluded folders/files | Vault paths (one per line) where auto mode stays inactive | empty |
 
 ## Usage
 
@@ -76,12 +77,13 @@ matches the `version` in `manifest.json`.
 | `src/taskParser.ts` | Markdown parsing, section and block detection |
 | `src/mover.ts` | Pure move logic (`moveCompletedTasks`, `moveSelectedTasks`) |
 | `src/settings.ts` | Settings UI |
+| `src/exclusions.ts` | Path-exclusion matching for auto mode |
 | `src/i18n.ts` | UI string localization (English / German) |
 | `src/types.ts` | Shared types and defaults |
 | `src/*.test.ts` | Unit tests |
 
-`taskParser.ts` and `mover.ts` have no Obsidian dependencies, so they are
-unit-testable without a running Obsidian instance.
+`taskParser.ts`, `mover.ts` and `exclusions.ts` have no Obsidian dependencies,
+so they are unit-testable without a running Obsidian instance.
 
 ## License
 
