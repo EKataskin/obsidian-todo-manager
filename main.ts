@@ -1,7 +1,7 @@
 import { Editor, MarkdownView, Notice, Plugin, moment } from "obsidian";
 import { DEFAULT_SETTINGS, DoneMoverSettings, MoveOptions, MoveResult } from "./src/types";
 import { DoneMoverSettingTab } from "./src/settings";
-import { moveCompletedTasks, moveSelectedTasks } from "./src/mover";
+import { moveCompletedTasks } from "./src/mover";
 import { isPathExcluded } from "./src/exclusions";
 import { Lang, Strings, getStrings } from "./src/i18n";
 
@@ -42,12 +42,6 @@ export default class DoneMoverPlugin extends Plugin {
 			editorCallback: (editor) => this.runMoveCompleted(editor),
 		});
 
-		this.addCommand({
-			id: "move-selected-tasks",
-			name: this.strings.cmdMoveSelection,
-			editorCallback: (editor) => this.runMoveSelection(editor),
-		});
-
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu, editor) => {
 				menu.addItem((item) =>
@@ -56,14 +50,6 @@ export default class DoneMoverPlugin extends Plugin {
 						.setIcon("check-check")
 						.onClick(() => this.runMoveCompleted(editor))
 				);
-				if (editor.getSelection().length > 0) {
-					menu.addItem((item) =>
-						item
-							.setTitle(this.strings.cmdMoveSelection)
-							.setIcon("arrow-down-to-line")
-							.onClick(() => this.runMoveSelection(editor))
-					);
-				}
 			})
 		);
 
@@ -86,36 +72,22 @@ export default class DoneMoverPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	private moveOptions(): MoveOptions {
+	private moveOptions(returnUnchecked: boolean): MoveOptions {
 		return {
-			doneHeading: this.settings.doneHeading,
+			calloutHeader: this.settings.calloutHeader,
 			appendDate: this.settings.appendCompletionDate,
+			returnUnchecked,
 			today: formatToday(),
 		};
 	}
 
 	private runMoveCompleted(editor: Editor) {
-		const result = moveCompletedTasks(editor.getValue(), this.moveOptions());
+		const result = moveCompletedTasks(editor.getValue(), this.moveOptions(true));
 		this.applyResult(editor, result);
 		new Notice(
 			result.movedCount > 0
-				? this.strings.noticeMoved(result.movedCount, this.settings.doneHeading)
+				? this.strings.noticeMoved(result.movedCount, this.settings.calloutHeader)
 				: this.strings.noticeNoCompleted
-		);
-	}
-
-	private runMoveSelection(editor: Editor) {
-		const startLine = editor.getCursor("from").line;
-		const endLine = editor.getCursor("to").line;
-		const result = moveSelectedTasks(editor.getValue(), {
-			...this.moveOptions(),
-			selection: { startLine, endLine },
-		});
-		this.applyResult(editor, result);
-		new Notice(
-			result.movedCount > 0
-				? this.strings.noticeMoved(result.movedCount, this.settings.doneHeading)
-				: this.strings.noticeNoSelection
 		);
 	}
 
@@ -127,7 +99,7 @@ export default class DoneMoverPlugin extends Plugin {
 			if (!view) return;
 			if (isPathExcluded(view.file?.path ?? "", this.settings.excludedPaths)) return;
 			const editor = view.editor;
-			const result = moveCompletedTasks(editor.getValue(), this.moveOptions());
+			const result = moveCompletedTasks(editor.getValue(), this.moveOptions(false));
 			if (result.movedCount > 0) {
 				this.applyResult(editor, result);
 				new Notice(this.strings.noticeAutoMoved(result.movedCount));

@@ -1,14 +1,15 @@
 // Pure task-moving logic — no Obsidian imports, fully unit-testable.
 
-import { MoveOptions, MoveResult, TaskBlock } from "./types";
+import { MoveOptions, MoveResult } from "./types";
 import {
 	TASK_RE,
-	blockEnd,
-	doneInsertIndex,
-	findDoneSection,
+	calloutType,
+	findCallout,
 	isBlockFullyDone,
 	parseLines,
+	quote,
 	splitLines,
+	splitSections,
 	topLevelBlocks,
 } from "./taskParser";
 
@@ -42,98 +43,88 @@ function dedent(blockLines: string[]): string[] {
 	});
 }
 
-/** True when a block starts inside the Done section (and so must not be moved). */
-function inDoneSection(
-	block: TaskBlock,
-	section: { headingIndex: number; contentEnd: number } | null
-): boolean {
-	return (
-		section !== null &&
-		block.start >= section.headingIndex &&
-		block.start < section.contentEnd
-	);
+/** Index of the last non-blank line, or -1 when there is none. */
+function lastNonBlank(lines: string[]): number {
+	for (let i = lines.length - 1; i >= 0; i--) {
+		if (lines[i].trim() !== "") return i;
+	}
+	return -1;
+}
+
+interface SectionResult {
+	content: string[];
+	moved: number;
+	returned: number;
 }
 
 /**
- * Moves the given blocks into the Done section. Pure: takes document text,
- * returns new text. Blocks already inside the Done section must be filtered
- * out by the caller.
+ * Moves the fully completed top-level tasks of one section into the
+ * section's callout. Returns null when the section stays unchanged.
+ * `hasNextLine` tells whether a heading follows the section.
  */
-function performMove(text: string, blocksToMove: TaskBlock[], opts: MoveOptions): MoveResult {
-	if (blocksToMove.length === 0) return { text, movedCount: 0 };
+function processSection(
+	content: string[],
+	hasNextLine: boolean,
+	type: string,
+	opts: MoveOptions
+): SectionResult | null {
+	const parsed = parseLines(content);
+	const done = topLevelBlocks(content, parsed).filter((b) => isBlockFullyDone(parsed, b));
+	if (done.length === 0) return null;
+
+	const removed = new Set<number>();
+	const moved: string[] = [];
+	for (const b of done) {
+		for (let i = b.start; i <= b.end; i++) removed.add(i);
+		let blockLines = dedent(content.slice(b.start, b.end + 1));
+		if (opts.appendDate) blockLines = appendDateToBlock(blockLines, opts.today);
+		moved.push(...blockLines.map(quote));
+	}
+
+	const callout = findCallout(content, { contentStart: 0, contentEnd: content.length }, type);
+	let out: string[] = [];
+	if (callout) {
+		content.forEach((line, i) => {
+			if (removed.has(i)) return;
+			out.push(line);
+			if (i === callout.header) out.push(...moved);
+		});
+	} else {
+		const kept = content.filter((_, i) => !removed.has(i));
+		const at = lastNonBlank(kept) + 1;
+		const block = ["", opts.calloutHeader, ...moved];
+		const nextIsText = at < kept.length ? kept[at].trim() !== "" : hasNextLine;
+		if (nextIsText) block.push("");
+		out = [...kept.slice(0, at), ...block, ...kept.slice(at)];
+	}
+	return { content: out, moved: done.length, returned: 0 };
+}
+
+/**
+ * Moves every fully completed top-level task into the callout at the end of
+ * its own section (the lines under one heading). Pure: text in, text out.
+ */
+export function moveCompletedTasks(text: string, opts: MoveOptions): MoveResult {
+	const unchanged = { text, movedCount: 0, returnedCount: 0 };
+	const type = calloutType(opts.calloutHeader);
+	if (type === null) return unchanged;
 
 	const { lines, eol } = splitLines(text);
-	const blocks = [...blocksToMove].sort((a, b) => a.start - b.start);
-
-	const movedSet = new Set<number>();
-	for (const b of blocks) {
-		for (let i = b.start; i <= b.end; i++) movedSet.add(i);
+	let movedCount = 0;
+	let returnedCount = 0;
+	// Bottom-up, so splicing a section does not shift the ones above it.
+	for (const s of splitSections(lines).reverse()) {
+		const r = processSection(
+			lines.slice(s.contentStart, s.contentEnd),
+			s.contentEnd < lines.length,
+			type,
+			opts
+		);
+		if (!r) continue;
+		lines.splice(s.contentStart, s.contentEnd - s.contentStart, ...r.content);
+		movedCount += r.moved;
+		returnedCount += r.returned;
 	}
-
-	let movedLines: string[] = [];
-	for (const b of blocks) {
-		let blockLines = dedent(lines.slice(b.start, b.end + 1));
-		if (opts.appendDate) blockLines = appendDateToBlock(blockLines, opts.today);
-		movedLines = movedLines.concat(blockLines);
-	}
-
-	const section = findDoneSection(lines, opts.doneHeading);
-	const result: string[] = [];
-
-	if (section) {
-		const insertAfter = doneInsertIndex(lines, section);
-		for (let i = 0; i < lines.length; i++) {
-			if (!movedSet.has(i)) result.push(lines[i]);
-			if (i === insertAfter) result.push(...movedLines);
-		}
-	} else {
-		for (let i = 0; i < lines.length; i++) {
-			if (!movedSet.has(i)) result.push(lines[i]);
-		}
-		if (result.length > 0 && result[result.length - 1].trim() !== "") {
-			result.push("");
-		}
-		result.push("### " + opts.doneHeading.trim());
-		result.push("");
-		result.push(...movedLines);
-	}
-
-	return { text: result.join(eol), movedCount: blocks.length };
+	if (movedCount + returnedCount === 0) return unchanged;
+	return { text: lines.join(eol), movedCount, returnedCount };
 }
-
-/** Moves every fully completed top-level task into the Done section. */
-export function moveCompletedTasks(text: string, opts: MoveOptions): MoveResult {
-	const { lines } = splitLines(text);
-	const parsed = parseLines(lines);
-	const section = findDoneSection(lines, opts.doneHeading);
-	const blocks = topLevelBlocks(lines, parsed).filter(
-		(b) => !inDoneSection(b, section) && isBlockFullyDone(parsed, b)
-	);
-	return performMove(text, blocks, opts);
-}
-
-export interface SelectionRange {
-	startLine: number;
-	endLine: number;
-}
-
-/**
- * Moves the top-level task blocks touched by the selection into the Done
- * section, regardless of their checkbox state.
- */
-export function moveSelectedTasks(
-	text: string,
-	opts: MoveOptions & { selection: SelectionRange }
-): MoveResult {
-	const { lines } = splitLines(text);
-	const parsed = parseLines(lines);
-	const section = findDoneSection(lines, opts.doneHeading);
-	const { startLine, endLine } = opts.selection;
-	const blocks = topLevelBlocks(lines, parsed).filter(
-		(b) => !inDoneSection(b, section) && b.start <= endLine && b.end >= startLine
-	);
-	return performMove(text, blocks, opts);
-}
-
-// Re-exported so callers can build blocks without reaching into taskParser.
-export { blockEnd };

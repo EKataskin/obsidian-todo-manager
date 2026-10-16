@@ -29,10 +29,10 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 			.setDesc(s.settingHeadingDesc)
 			.addText((text) =>
 				text
-					.setPlaceholder("Done")
-					.setValue(this.plugin.settings.doneHeading)
+					.setPlaceholder("> [!done]- Done")
+					.setValue(this.plugin.settings.calloutHeader)
 					.onChange(async (value) => {
-						this.plugin.settings.doneHeading = value.trim() || "Done";
+						this.plugin.settings.calloutHeader = value.trim() || "> [!done]- Done";
 						await this.plugin.saveSettings();
 					})
 			);

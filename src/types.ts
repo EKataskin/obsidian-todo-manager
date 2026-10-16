@@ -3,8 +3,8 @@
 export interface DoneMoverSettings {
 	/** When on, fully completed tasks are moved automatically shortly after being checked. */
 	autoMode: boolean;
-	/** Name of the target heading the tasks are moved under (e.g. "Done"). */
-	doneHeading: string;
+	/** First line of the callout that collects completed tasks (e.g. "> [!done]- Done"). */
+	calloutHeader: string;
 	/** When on, a "✅ YYYY-MM-DD" completion date is appended to moved checked lines. */
 	appendCompletionDate: boolean;
 	/** Vault paths (folders or files) in which auto mode stays inactive. */
@@ -13,15 +13,17 @@ export interface DoneMoverSettings {
 
 export const DEFAULT_SETTINGS: DoneMoverSettings = {
 	autoMode: false,
-	doneHeading: "Done",
+	calloutHeader: "> [!done]- Done",
 	appendCompletionDate: true,
 	excludedPaths: [],
 };
 
 /** Options consumed by the pure mover functions. */
 export interface MoveOptions {
-	doneHeading: string;
+	calloutHeader: string;
 	appendDate: boolean;
+	/** When on, blocks with an unchecked line go back from the callout to the list. */
+	returnUnchecked: boolean;
 	/** Today's date as YYYY-MM-DD. Passed in so the logic stays deterministic/testable. */
 	today: string;
 }
@@ -29,8 +31,10 @@ export interface MoveOptions {
 export interface MoveResult {
 	/** The full document text after the move (unchanged if nothing moved). */
 	text: string;
-	/** Number of top-level task blocks that were moved. */
+	/** Number of top-level task blocks that were moved into callouts. */
 	movedCount: number;
+	/** Number of top-level task blocks that were returned from callouts. */
+	returnedCount: number;
 }
 
 /** A contiguous run of lines: a task line plus all of its indented sub-lines. */
