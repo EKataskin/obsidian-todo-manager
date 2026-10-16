@@ -68,6 +68,13 @@ German or Russian when Obsidian is set to one of them.
 - *From theme* next to the setting fills it with the closed task
   characters, then every character the theme and CSS snippets draw as a
   checked checkbox. The field can then be edited.
+- How a status looks is up to Obsidian and the theme, not the plugin.
+  Obsidian itself strikes through and dims only `x` and `X` tasks. A theme
+  may add more, e.g. AnuPpuccin also strikes through `-`. For any other
+  character Obsidian draws a checked box with a check mark and leaves the
+  text as it is, unless the theme draws its own icon for that character.
+- The look does not decide what moves: a task is closed only when its
+  character is listed in *Closed task characters*.
 
 ## Settings
 
