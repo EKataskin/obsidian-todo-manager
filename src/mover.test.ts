@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { moveCompletedTasks } from "./mover";
+import { changedRange, moveCompletedTasks } from "./mover";
 import { MoveOptions } from "./types";
 
 const OPTS: MoveOptions = {
@@ -204,5 +204,28 @@ describe("moveCompletedTasks with returnUnchecked", () => {
 		const r = run(["## A", "- [x] new", "", "> [!done]- X", "> - [ ] back"], back);
 		expect(r).toMatchObject({ movedCount: 1, returnedCount: 1 });
 		expect(r.text).toBe(["## A", "- [ ] back", "", "> [!done]- X", "> - [x] new"].join("\n"));
+	});
+});
+
+describe("changedRange", () => {
+	function apply(before: string, after: string) {
+		const r = changedRange(before, after);
+		return before.slice(0, r.from) + r.insert + before.slice(r.to);
+	}
+
+	it("covers only the changed middle", () => {
+		expect(changedRange("abcXYZdef", "abc12def")).toEqual({ from: 3, to: 6, insert: "12" });
+	});
+
+	it("does not let prefix and suffix overlap", () => {
+		expect(changedRange("aa", "aaa")).toEqual({ from: 2, to: 2, insert: "a" });
+		expect(apply("aba", "aa")).toBe("aa");
+	});
+
+	it("rebuilds the new text from the old one", () => {
+		const before = "## A\n- [x] a\n- [ ] b\n## B";
+		const after = moveCompletedTasks(before, OPTS).text;
+		expect(apply(before, after)).toBe(after);
+		expect(changedRange(before, after).from).toBeGreaterThanOrEqual("## A\n".length);
 	});
 });

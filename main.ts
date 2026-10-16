@@ -1,7 +1,7 @@
 import { Editor, MarkdownFileInfo, MarkdownView, Notice, Plugin, TFile, moment } from "obsidian";
 import { DEFAULT_SETTINGS, DoneMoverSettings, MoveOptions, MoveResult } from "./src/types";
 import { DoneMoverSettingTab } from "./src/settings";
-import { moveCompletedTasks } from "./src/mover";
+import { changedRange, moveCompletedTasks } from "./src/mover";
 import { calloutType } from "./src/taskParser";
 import { isPathExcluded } from "./src/exclusions";
 import { Lang, Strings, getStrings } from "./src/i18n";
@@ -164,13 +164,10 @@ export default class DoneMoverPlugin extends Plugin {
 		}, AUTO_MOVE_DEBOUNCE_MS);
 	}
 
-	/** Writes the new text back and keeps the cursor at a sensible position. */
+	/** Replaces only the changed part, so the cursor, scroll and folds elsewhere stay put. */
 	private applyResult(editor: Editor, result: MoveResult) {
 		if (result.movedCount + result.returnedCount === 0) return;
-		const cursor = editor.getCursor();
-		editor.setValue(result.text);
-		const line = Math.min(cursor.line, editor.lastLine());
-		const ch = Math.min(cursor.ch, editor.getLine(line).length);
-		editor.setCursor({ line, ch });
+		const { from, to, insert } = changedRange(editor.getValue(), result.text);
+		editor.replaceRange(insert, editor.offsetToPos(from), editor.offsetToPos(to));
 	}
 }

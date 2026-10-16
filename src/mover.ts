@@ -172,6 +172,20 @@ function processSection(
 }
 
 /**
+ * The part of `before` that differs from `after`: replacing `before[from, to)`
+ * with `insert` gives `after`. Lets the editor change only that part, so the
+ * cursor and folds outside of it stay put.
+ */
+export function changedRange(before: string, after: string): { from: number; to: number; insert: string } {
+	const max = Math.min(before.length, after.length);
+	let start = 0;
+	while (start < max && before[start] === after[start]) start++;
+	let tail = 0;
+	while (tail < max - start && before[before.length - 1 - tail] === after[after.length - 1 - tail]) tail++;
+	return { from: start, to: before.length - tail, insert: after.slice(start, after.length - tail) };
+}
+
+/**
  * Moves every fully completed top-level task into the callout at the end of
  * its own section (the lines under one heading). Pure: text in, text out.
  */
