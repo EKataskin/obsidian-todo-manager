@@ -4,3 +4,10 @@
 	padding-left: var(--size-4-3);
 	border-left: 2px solid var(--background-modifier-border);
 }
+
+/* A text field whose input is not valid and therefore not saved. */
+.todo-manager-settings input[aria-invalid="true"],
+.todo-manager-settings input[aria-invalid="true"]:focus {
+	border-color: var(--text-error);
+	box-shadow: 0 0 0 1px var(--text-error);
+}

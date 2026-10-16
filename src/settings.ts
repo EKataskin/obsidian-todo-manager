@@ -3,6 +3,11 @@ import type DoneMoverPlugin from "../main";
 import { calloutType } from "./taskParser";
 import { DatePosition } from "./types";
 
+/** Marks a field whose input is not saved; styled in styles.css. */
+function markInvalid(input: HTMLInputElement, invalid: boolean) {
+	input.setAttribute("aria-invalid", String(invalid));
+}
+
 export class DoneMoverSettingTab extends PluginSettingTab {
 	plugin: DoneMoverPlugin;
 
@@ -18,6 +23,7 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		const s = this.plugin.strings;
 		containerEl.empty();
+		containerEl.addClass("todo-manager-settings");
 		this.templateOnOpen = this.plugin.settings.dateTemplate;
 
 		new Setting(containerEl)
@@ -39,7 +45,9 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.calloutHeader)
 					.onChange(async (value) => {
 						// Only a valid callout header is saved; partial input is ignored.
-						if (calloutType(value.trim()) === null) return;
+						const valid = calloutType(value.trim()) !== null;
+						markInvalid(text.inputEl, !valid);
+						if (!valid) return;
 						this.plugin.settings.calloutHeader = value.trim();
 						await this.plugin.saveSettings();
 					})
@@ -55,6 +63,7 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						// Spaces are dropped: "- [ ]" is always an open task.
 						const chars = value.replace(/\s/g, "");
+						markInvalid(text.inputEl, chars === "");
 						if (chars === "") return;
 						this.plugin.settings.closedChars = chars;
 						await this.plugin.saveSettings();
@@ -97,6 +106,7 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.dateTemplate)
 					.onChange(async (value) => {
 						// Only a template with "{date}" is saved; partial input is ignored.
+						markInvalid(text.inputEl, !value.includes("{date}"));
 						if (!value.includes("{date}")) return;
 						this.plugin.settings.dateTemplate = value.trim();
 						await this.plugin.saveSettings();
