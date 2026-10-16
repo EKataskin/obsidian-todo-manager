@@ -15,15 +15,19 @@ import {
 	unquote,
 } from "./taskParser";
 
-/** Regex for a completion date written with the template ("{date}" → YYYY-MM-DD). */
-function dateRegex(template: string): RegExp {
+/**
+ * Regex for a completion date written with the current or an old template
+ * ("{date}" → YYYY-MM-DD).
+ */
+function dateRegex(opts: MoveOptions): RegExp {
 	const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-	return new RegExp(template.split("{date}").map(escape).join("\\d{4}-\\d{2}-\\d{2}"));
+	const one = (t: string) => t.split("{date}").map(escape).join("\\d{4}-\\d{2}-\\d{2}");
+	return new RegExp([opts.dateTemplate, ...opts.oldDateTemplates].map((t) => `(?:${one(t)})`).join("|"));
 }
 
 /** Adds the templated date to closed task lines that do not yet have one. */
 function addDateToBlock(blockLines: string[], opts: MoveOptions): string[] {
-	const re = dateRegex(opts.dateTemplate);
+	const re = dateRegex(opts);
 	const stamp = opts.dateTemplate.split("{date}").join(opts.today);
 	return blockLines.map((line) => {
 		const m = line.match(TASK_RE);
@@ -77,7 +81,7 @@ function hasUncheckedTask(parsed: ParsedLine[], block: TaskBlock): boolean {
 
 /** Removes the templated completion date from open task lines. */
 function stripDateFromOpen(blockLines: string[], opts: MoveOptions): string[] {
-	const re = new RegExp("\\s*" + dateRegex(opts.dateTemplate).source);
+	const re = new RegExp(`\\s*(?:${dateRegex(opts).source})`);
 	return blockLines.map((line) => {
 		const m = line.match(TASK_RE);
 		if (!m || opts.closedChars.includes(m[3])) return line;

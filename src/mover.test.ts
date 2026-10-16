@@ -7,6 +7,7 @@ const OPTS: MoveOptions = {
 	appendDate: false,
 	datePosition: "end",
 	dateTemplate: "✅ {date}",
+	oldDateTemplates: [],
 	closedChars: "xX-",
 	returnUnchecked: false,
 	today: "2026-10-17",
@@ -58,6 +59,12 @@ describe("moveCompletedTasks", () => {
 	it("does not add a second date when the template date is already there", () => {
 		const r = run(["## A", "- [x] [done:: 2026-10-01] a"], { appendDate: true, datePosition: "start", dateTemplate: "[done:: {date}]" });
 		expect(r.text).toContain("> - [x] [done:: 2026-10-01] a");
+		expect(r.text).not.toContain("2026-10-17");
+	});
+
+	it("does not add a second date when a date of an old template is there", () => {
+		const r = run(["## A", "- [x] a ✅ 2026-10-01"], { appendDate: true, dateTemplate: "({date})", oldDateTemplates: ["✅ {date}"] });
+		expect(r.text).toContain("> - [x] a ✅ 2026-10-01");
 		expect(r.text).not.toContain("2026-10-17");
 	});
 
@@ -182,6 +189,14 @@ describe("moveCompletedTasks with returnUnchecked", () => {
 
 	it("strips a template date from the start of an unchecked line", () => {
 		const r = run(["## A", "", "> [!done]- X", "> - [ ] [done:: 2026-10-01] p"], { ...back, dateTemplate: "[done:: {date}]" });
+		expect(r.text).toBe(["## A", "- [ ] p"].join("\n"));
+	});
+
+	it("strips a date written with an old template", () => {
+		const r = run(["## A", "", "> [!done]- X", "> - [ ] p <small>[2026-10-01]</small>"], {
+			...back,
+			oldDateTemplates: ["<small>[{date}]</small>"],
+		});
 		expect(r.text).toBe(["## A", "- [ ] p"].join("\n"));
 	});
 

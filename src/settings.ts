@@ -11,10 +11,14 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
+	/** The date template when the tab was opened, to remember it once it changes. */
+	private templateOnOpen = "";
+
 	display(): void {
 		const { containerEl } = this;
 		const s = this.plugin.strings;
 		containerEl.empty();
+		this.templateOnOpen = this.plugin.settings.dateTemplate;
 
 		new Setting(containerEl)
 			.setName(s.settingAutoModeName)
@@ -122,5 +126,15 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 					});
 				text.inputEl.rows = 4;
 			});
+	}
+
+	// Done on close, not on every keystroke, so half-typed templates are not kept.
+	hide(): void {
+		super.hide();
+		const settings = this.plugin.settings;
+		const old = this.templateOnOpen;
+		if (!old || old === settings.dateTemplate || settings.oldDateTemplates.includes(old)) return;
+		settings.oldDateTemplates = [...settings.oldDateTemplates, old];
+		void this.plugin.saveSettings();
 	}
 }

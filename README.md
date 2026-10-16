@@ -43,11 +43,15 @@ German or Russian when Obsidian is set to one of them.
   keeps its parent in the list.
 - **Moving back:** reopen a task inside the callout (e.g. uncheck it) and run
   the same command. Every block with an open task returns to the end of its
-  list, and the completion date (matched by the current template) is removed
-  from its open lines. A callout that becomes empty is removed. Unchecking
+  list, and the completion date is removed from its open lines. A callout that becomes empty is removed. Unchecking
   alone changes nothing.
 - The callout is found by its type (`[!done]` by default), so changing the
   header text later does not lose existing blocks.
+
+- A completion date is recognized when it matches the current date template
+  or one used before: when the template changes, the old one is remembered
+  as the settings window closes. Such dates are not added twice and are
+  removed on moving back.
 
 ## Settings
 
