@@ -61,7 +61,10 @@ German or Russian when Obsidian is set to one of them.
   to change.
 - The submenu offers the open status (`- [ ]`) first, then the characters
   of the *Status characters* setting, each drawn with the theme's checkbox
-  style. The current status is marked.
+  style. The current status has a highlighted background.
+- The submenu is laid out in four columns, filled row by row. To change
+  the count, add a CSS snippet such as
+  `body { --todo-manager-status-columns: 5; }`.
 - *From theme* next to the setting fills it with the closed task
   characters, then every character the theme and CSS snippets draw as a
   checked checkbox. The field can then be edited.
