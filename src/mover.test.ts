@@ -96,6 +96,11 @@ describe("moveCompletedTasks", () => {
 		expect(r.text).toBe(["## A", "", "> [!done]- Выполнено", "> - [x] a", "", "## B"].join("\n"));
 	});
 
+	it("does not start the file with a blank line", () => {
+		const r = run(["- [x] a", "## B"]);
+		expect(r.text).toBe(["> [!done]- Выполнено", "> - [x] a", "", "## B"].join("\n"));
+	});
+
 	it("keeps CRLF line endings", () => {
 		const r = moveCompletedTasks("## A\r\n- [x] a\r\n", OPTS);
 		expect(r.text).toBe("## A\r\n\r\n> [!done]- Выполнено\r\n> - [x] a\r\n");

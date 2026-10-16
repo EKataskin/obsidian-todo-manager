@@ -93,10 +93,12 @@ function stripDateFromOpen(blockLines: string[], opts: MoveOptions): string[] {
  * Processes one section: fully completed top-level tasks go to the top of the
  * section's callout; with `returnUnchecked`, callout blocks that have an
  * unchecked line go back to the end of the list. Returns null when the
- * section stays unchanged. `hasNextLine` tells whether a heading follows.
+ * section stays unchanged. `atFileStart` tells whether the section opens the
+ * file, `hasNextLine` whether a heading follows.
  */
 function processSection(
 	content: string[],
+	atFileStart: boolean,
 	hasNextLine: boolean,
 	type: string,
 	opts: MoveOptions
@@ -133,7 +135,7 @@ function processSection(
 	if (!callout) {
 		const kept = content.filter((_, i) => !removed.has(i));
 		const at = lastNonBlank(kept) + 1;
-		const block = ["", opts.calloutHeader, ...moved];
+		const block = at > 0 || !atFileStart ? ["", opts.calloutHeader, ...moved] : [opts.calloutHeader, ...moved];
 		const nextIsText = at < kept.length ? kept[at].trim() !== "" : hasNextLine;
 		if (nextIsText) block.push("");
 		return { content: [...kept.slice(0, at), ...block, ...kept.slice(at)], moved: done.length, returned };
@@ -205,6 +207,7 @@ export function moveCompletedTasks(text: string, opts: MoveOptions): MoveResult 
 	for (const s of splitSections(lines).reverse()) {
 		const r = processSection(
 			lines.slice(s.contentStart, s.contentEnd),
+			s.contentStart === 0,
 			s.contentEnd < lines.length,
 			type,
 			opts
