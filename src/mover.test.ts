@@ -150,6 +150,11 @@ describe("moveCompletedTasks", () => {
 		expect(r.movedCount).toBe(1);
 	});
 
+	it("moves a task whose sub-item is a link with one-letter text", () => {
+		const r = run(["## A", "- [x] p", "\t- [a](https://x)"], { appendDate: true, datePosition: "start" });
+		expect(r.text).toBe(["## A", "", "> [!done]- Выполнено", "> - [x] ✅ 2026-10-17 p", "> \t- [a](https://x)"].join("\n"));
+	});
+
 	it("keeps a done task under a plain bullet in place", () => {
 		const text = ["## A", "- Groceries", "\t- [x] milk", "\t- [ ] bread"];
 		expect(run(text)).toEqual({ text: text.join("\n"), movedCount: 0, returnedCount: 0 });

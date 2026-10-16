@@ -38,6 +38,12 @@ describe("parseLines", () => {
 		expect(parsed[4].checked).toBe(false);
 		expect(parsed[2].indent).toBe(1);
 	});
+
+	it("does not take a link with one-letter text for a task", () => {
+		const parsed = parseLines(["- [a](https://x)", "- [x]", "- [x] done"]);
+		expect(parsed.map((p) => p.isTask)).toEqual([false, true, true]);
+		expect(parsed[0].isListItem).toBe(true);
+	});
 });
 
 describe("blockEnd", () => {

@@ -2,8 +2,11 @@
 
 import { TaskBlock } from "./types";
 
-/** Matches a checkbox task line: indent, list marker, status char, rest of the text. */
-export const TASK_RE = /^(\s*)([-*+]|\d+[.)]) \[(.)\] ?(.*)$/;
+/**
+ * Matches a checkbox task line: indent, list marker, status char, rest of the text.
+ * The brackets must be followed by a space or the line end, so "- [a](url)" is a link.
+ */
+export const TASK_RE = /^(\s*)([-*+]|\d+[.)]) \[(.)\](?:\s(.*))?$/;
 
 const HEADING_RE = /^#{1,6}\s+/;
 /** Any list item: "-", "*", "+" or "1." / "1)" followed by a space. */
