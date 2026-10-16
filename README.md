@@ -1,52 +1,52 @@
-# To-Do to Done Mover
+# To-Do Manager
 
-An [Obsidian](https://obsidian.md) plugin that quickly moves completed
-checkbox tasks — including their indented sub-tasks — from a to-do list into
-a `### Done` section of the same note.
+An [Obsidian](https://obsidian.md) plugin that moves completed checkbox tasks,
+including their indented sub-tasks, into a collapsible callout at the end of
+their own list, and back.
 
-🌍 **Languages:** English (this page) · [Deutsch](README.de.md)
+A fork of [To-Do to Done Mover](https://github.com/DonnervS/obsidian-todo-done-mover).
+The original moves all tasks of a note into one `### Done` heading; this fork
+gives every list its own block.
+
 The plugin interface follows Obsidian's UI language: English by default,
-German when Obsidian is set to German.
+German or Russian when Obsidian is set to one of them.
 
-## Demo
+## How it works
 
-![The To-Do to Done Mover plugin in action](obsidian-done.gif)
+- A **list** is everything under one heading, up to the next heading of any
+  level. Lines before the first heading form a list too; frontmatter is
+  skipped.
+- *Move completed tasks* (right-click menu or command, can be bound to a
+  hotkey) moves every fully completed top-level task of each list into that
+  list's callout:
 
-## Features
+  ```markdown
+  ## Home
+  - [ ] Hang the shelf
 
-- **Right-click menu** in the editor:
-  - *Move completed tasks to Done* — moves every fully completed task.
-  - *Move selection to Done* — moves the task blocks touched by the current
-    text selection (only shown when text is selected).
-- The same actions are available as **commands** (command palette, can be
-  bound to hotkeys).
-- **Auto mode** (optional): as soon as a task is checked, it moves to Done
-  automatically — but only when the task **and all of its sub-tasks** are
-  checked.
-- **Excluded folders/files** (optional): auto mode stays inactive in the
-  configured vault paths (including subfolders); manual commands still work
-  there.
-- Sub-tasks move along with their parent; indentation is preserved.
-- Optionally appends a completion date `✅ YYYY-MM-DD` to each moved, checked
-  line (no duplicate dates).
-- If the `### Done` heading does not exist, it is created at the end of the
-  note.
+  > [!done]- Done
+  > - [x] Buy a lamp
+  ```
+
+- Newly moved tasks go to the **top** of the callout. If the list has no
+  callout yet, one is created after the list, separated by a blank line.
+- A task moves only when it **and all of its sub-tasks** are checked. A
+  checked sub-task under an unchecked parent stays in place.
+- **Moving back:** uncheck a task inside the callout and run the same command.
+  Every block with an unchecked line returns to the end of its list, and the
+  completion date is removed from its unchecked lines. A callout that becomes
+  empty is removed. Unchecking alone changes nothing.
+- The callout is found by its type (`[!done]` by default), so changing the
+  header text later does not lose existing blocks.
 
 ## Settings
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| Auto mode | Move completed tasks automatically | off |
-| Done heading | Name of the target heading | `Done` |
-| Append completion date | Append a `✅` date to moved lines | on |
+| Auto mode | Move completed tasks automatically after checking (never moves them back) | off |
+| Done block header | First line of the callout, must look like `> [!type]...` | `> [!done]- Done` |
+| Append completion date | Append `✅ YYYY-MM-DD` to moved, checked lines | on |
 | Excluded folders/files | Vault paths (one per line) where auto mode stays inactive | empty |
-
-## Usage
-
-1. Open a note that contains a checkbox to-do list.
-2. Right-click in the editor and choose an action, or run the matching
-   command from the command palette.
-3. Completed tasks are moved under the configured Done heading.
 
 ## Disclosures
 
@@ -56,7 +56,6 @@ German when Obsidian is set to German.
   auto mode) and never touches other files.
 - Settings are stored in the plugin's `data.json` inside your vault's
   configuration folder.
-- No account, payment, or external service is required.
 
 ## Build from source
 
@@ -69,29 +68,19 @@ npm run build     # produces main.js
 ## Install into a vault
 
 Copy `main.js` and `manifest.json` into
-`<Vault>/.obsidian/plugins/todo-done-mover/`, then enable the plugin under
+`<Vault>/.obsidian/plugins/todo-manager/`, then enable the plugin under
 *Settings → Community plugins*.
-
-For development you can use the project folder directly as the plugin folder
-(`npm run dev` for a watch build).
-
-## Releases
-
-Pushing a git tag triggers the GitHub Actions workflow in
-`.github/workflows/release.yml`, which builds the plugin and attaches
-`main.js` and `manifest.json` to a new GitHub release. Make sure the tag
-matches the `version` in `manifest.json`.
 
 ## Project structure
 
 | File | Purpose |
 |------|---------|
-| `main.ts` | Plugin class: commands, context menu, auto mode |
-| `src/taskParser.ts` | Markdown parsing, section and block detection |
-| `src/mover.ts` | Pure move logic (`moveCompletedTasks`, `moveSelectedTasks`) |
+| `main.ts` | Plugin class: command, context menu, auto mode |
+| `src/taskParser.ts` | Markdown parsing: sections, task blocks, callouts |
+| `src/mover.ts` | Pure move logic (`moveCompletedTasks`) |
 | `src/settings.ts` | Settings UI |
 | `src/exclusions.ts` | Path-exclusion matching for auto mode |
-| `src/i18n.ts` | UI string localization (English / German) |
+| `src/i18n.ts` | UI strings (English / German / Russian) |
 | `src/types.ts` | Shared types and defaults |
 | `src/*.test.ts` | Unit tests |
 
