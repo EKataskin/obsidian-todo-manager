@@ -16,9 +16,11 @@ German or Russian when Obsidian is set to one of them.
 - A **list** is everything under one heading, up to the next heading of any
   level. Lines before the first heading form a list too; frontmatter is
   skipped.
-- *Move completed tasks* (right-click menu or command, can be bound to a
-  hotkey) moves every fully completed top-level task of each list into that
-  list's callout:
+- *Move completed tasks* moves every fully completed top-level task of each
+  list into that list's callout. It runs from the command palette (can be
+  bound to a hotkey), the editor's right-click menu, or the file menu (the
+  note's *More options* menu or its tab). The command and
+  the file menu work in Reading view too:
 
   ```markdown
   ## Home

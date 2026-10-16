@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, Notice, Plugin, moment } from "obsidian";
+import { Editor, MarkdownView, Notice, Plugin, TFile, moment } from "obsidian";
 import { DEFAULT_SETTINGS, DoneMoverSettings, MoveOptions, MoveResult } from "./src/types";
 import { DoneMoverSettingTab } from "./src/settings";
 import { moveCompletedTasks } from "./src/mover";
@@ -37,10 +37,16 @@ export default class DoneMoverPlugin extends Plugin {
 		await this.loadSettings();
 		this.addSettingTab(new DoneMoverSettingTab(this.app, this));
 
+		// Works in any view mode: through the editor when one is open, else on the file.
 		this.addCommand({
 			id: "move-completed-tasks",
 			name: this.strings.cmdMoveCompleted,
-			editorCallback: (editor) => this.runMoveCompleted(editor),
+			checkCallback: (checking) => {
+				const file = this.app.workspace.getActiveFile();
+				if (!file || file.extension !== "md") return false;
+				if (!checking) void this.runOnFile(file);
+				return true;
+			},
 		});
 
 		this.registerEvent(
@@ -50,6 +56,20 @@ export default class DoneMoverPlugin extends Plugin {
 						.setTitle(this.strings.cmdMoveCompleted)
 						.setIcon("check-check")
 						.onClick(() => this.runMoveCompleted(editor))
+				);
+			})
+		);
+
+		// The "More options" menu of a note and its tab, but not the file explorer.
+		this.registerEvent(
+			this.app.workspace.on("file-menu", (menu, file, source) => {
+				if (source === "file-explorer-context-menu") return;
+				if (!(file instanceof TFile) || file.extension !== "md") return;
+				menu.addItem((item) =>
+					item
+						.setTitle(this.strings.cmdMoveCompleted)
+						.setIcon("check-check")
+						.onClick(() => this.runOnFile(file))
 				);
 			})
 		);
@@ -93,6 +113,33 @@ export default class DoneMoverPlugin extends Plugin {
 	private runMoveCompleted(editor: Editor) {
 		const result = moveCompletedTasks(editor.getValue(), this.moveOptions(true));
 		this.applyResult(editor, result);
+		this.showResult(result);
+	}
+
+	/** Uses an open editor of the file (keeps the cursor), else rewrites the file itself. */
+	private async runOnFile(file: TFile) {
+		const editor = this.editorFor(file);
+		if (editor) return this.runMoveCompleted(editor);
+		let result!: MoveResult;
+		await this.app.vault.process(file, (text) => {
+			result = moveCompletedTasks(text, this.moveOptions(true));
+			return result.text;
+		});
+		this.showResult(result);
+	}
+
+	/** The editor of a note that shows the file in Source or Live Preview mode. */
+	private editorFor(file: TFile): Editor | null {
+		for (const leaf of this.app.workspace.getLeavesOfType("markdown")) {
+			const view = leaf.view;
+			if (view instanceof MarkdownView && view.file === file && view.getMode() === "source") {
+				return view.editor;
+			}
+		}
+		return null;
+	}
+
+	private showResult(result: MoveResult) {
 		new Notice(
 			result.movedCount + result.returnedCount > 0
 				? this.strings.noticeMoved(result.movedCount, result.returnedCount)
