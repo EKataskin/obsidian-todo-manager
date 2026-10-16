@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
 	blockEnd,
-	doneInsertIndex,
-	findDoneSection,
+	calloutType,
+	findCallout,
 	isBlockFullyDone,
 	parseLines,
+	quote,
 	splitLines,
+	splitSections,
 	topLevelBlocks,
+	unquote,
 } from "./taskParser";
 
 const SAMPLE = [
@@ -77,17 +80,71 @@ describe("isBlockFullyDone", () => {
 	});
 });
 
-describe("findDoneSection / doneInsertIndex", () => {
-	it("locates the Done heading and its content range", () => {
-		const { lines } = splitLines(SAMPLE);
-		const section = findDoneSection(lines, "Done");
-		expect(section).not.toBeNull();
-		expect(section?.headingIndex).toBe(9);
-		expect(doneInsertIndex(lines, section!)).toBe(11);
+describe("splitSections", () => {
+	it("splits by headings of any level and keeps the pre-heading part", () => {
+		const lines = ["- [ ] top", "## A", "- [ ] a", "### B", "- [ ] b"];
+		expect(splitSections(lines)).toEqual([
+			{ contentStart: 0, contentEnd: 1 },
+			{ contentStart: 2, contentEnd: 3 },
+			{ contentStart: 4, contentEnd: 5 },
+		]);
 	});
 
-	it("returns null when the heading is missing", () => {
-		const { lines } = splitLines("### To-DO\n- [ ] x");
-		expect(findDoneSection(lines, "Done")).toBeNull();
+	it("does not split on a thematic break", () => {
+		expect(splitSections(["## A", "- [ ] a", "---", "- [ ] b"])).toEqual([
+			{ contentStart: 0, contentEnd: 0 },
+			{ contentStart: 1, contentEnd: 4 },
+		]);
+	});
+
+	it("skips frontmatter", () => {
+		const lines = ["---", "tags: [x]", "---", "- [ ] a"];
+		expect(splitSections(lines)).toEqual([{ contentStart: 3, contentEnd: 4 }]);
+	});
+});
+
+describe("calloutType", () => {
+	it("reads the type case-insensitively", () => {
+		expect(calloutType("> [!Done]- Выполнено")).toBe("done");
+		expect(calloutType("> [!done]")).toBe("done");
+	});
+
+	it("returns null for a non-callout line", () => {
+		expect(calloutType("Выполнено")).toBeNull();
+		expect(calloutType("> quote")).toBeNull();
+	});
+});
+
+describe("findCallout", () => {
+	it("finds the callout of the given type and its body", () => {
+		const lines = [
+			"## A",
+			"- [ ] a",
+			"",
+			"> [!note] x",
+			"> n",
+			"",
+			"> [!done]- X",
+			"> - [x] d",
+			">",
+			"> - [x] e",
+			"text",
+		];
+		const [, section] = splitSections(lines);
+		expect(findCallout(lines, section, "done")).toEqual({ header: 6, end: 9 });
+	});
+
+	it("returns null when the section has none", () => {
+		const lines = ["## A", "- [ ] a"];
+		expect(findCallout(lines, splitSections(lines)[1], "done")).toBeNull();
+	});
+});
+
+describe("quote / unquote", () => {
+	it("round-trips task lines and blank lines", () => {
+		expect(quote("	- [x] c")).toBe("> 	- [x] c");
+		expect(quote("")).toBe(">");
+		expect(unquote("> 	- [x] c")).toBe("	- [x] c");
+		expect(unquote(">")).toBe("");
 	});
 });

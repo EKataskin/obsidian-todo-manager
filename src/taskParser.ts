@@ -107,47 +107,72 @@ export function isBlockFullyDone(parsed: ParsedLine[], block: TaskBlock): boolea
 	return true;
 }
 
-export interface DoneSection {
-	/** Line index of the "### Done" heading. */
-	headingIndex: number;
-	/** First line index after the heading. */
+/** A run of lines under one heading (or before the first heading). */
+export interface Section {
+	/** First content line; the heading, if any, is the line before it. */
 	contentStart: number;
-	/** Exclusive end: first line index no longer part of the section. */
+	/** Exclusive end: the next heading or the end of the file. */
 	contentEnd: number;
 }
 
+/** Index of the first line after a leading YAML frontmatter block, or 0. */
+function frontmatterEnd(lines: string[]): number {
+	if (lines[0] !== "---") return 0;
+	for (let i = 1; i < lines.length; i++) {
+		if (lines[i] === "---") return i + 1;
+	}
+	return 0;
+}
+
 /**
- * Locates the section whose heading text matches `headingName`
- * (case-insensitive). The section runs until the next heading, thematic
- * break, or end of file.
+ * Splits the document into sections by headings of any level. The part
+ * before the first heading is always returned as the first section (it may
+ * be empty). Frontmatter belongs to no section; thematic breaks do not split.
  */
-export function findDoneSection(lines: string[], headingName: string): DoneSection | null {
-	const target = headingName.trim().toLowerCase();
-	for (let i = 0; i < lines.length; i++) {
-		const m = lines[i].match(/^#{1,6}\s+(.*?)\s*$/);
-		if (m && m[1].trim().toLowerCase() === target) {
-			let end = lines.length;
-			for (let j = i + 1; j < lines.length; j++) {
-				if (isHeading(lines[j]) || isThematicBreak(lines[j])) {
-					end = j;
-					break;
-				}
-			}
-			return { headingIndex: i, contentStart: i + 1, contentEnd: end };
+export function splitSections(lines: string[]): Section[] {
+	const sections: Section[] = [];
+	let start = frontmatterEnd(lines);
+	for (let i = start; i < lines.length; i++) {
+		if (isHeading(lines[i])) {
+			sections.push({ contentStart: start, contentEnd: i });
+			start = i + 1;
 		}
+	}
+	sections.push({ contentStart: start, contentEnd: lines.length });
+	return sections;
+}
+
+const CALLOUT_HEADER_RE = /^>\s*\[!([\w-]+)\]/;
+
+/** Returns the lower-cased callout type of a header line like "> [!done]- X". */
+export function calloutType(header: string): string | null {
+	const m = header.match(CALLOUT_HEADER_RE);
+	return m ? m[1].toLowerCase() : null;
+}
+
+/** A callout: its header line and the last line of its body (inclusive). */
+export interface CalloutRange {
+	header: number;
+	end: number;
+}
+
+/** Finds the first callout of the given type inside a section. */
+export function findCallout(lines: string[], section: Section, type: string): CalloutRange | null {
+	for (let i = section.contentStart; i < section.contentEnd; i++) {
+		if (calloutType(lines[i]) !== type) continue;
+		let end = i;
+		while (end + 1 < section.contentEnd && lines[end + 1].startsWith(">")) end++;
+		return { header: i, end };
 	}
 	return null;
 }
 
-/**
- * Returns the line index after which new entries should be inserted into the
- * Done section: the last non-blank line of the section, or the heading itself
- * when the section is empty.
- */
-export function doneInsertIndex(lines: string[], section: DoneSection): number {
-	let idx = section.headingIndex;
-	for (let i = section.contentStart; i < section.contentEnd; i++) {
-		if (lines[i].trim() !== "") idx = i;
-	}
-	return idx;
+/** Strips the blockquote prefix from a callout body line. */
+export function unquote(line: string): string {
+	return line.replace(/^> ?/, "");
+}
+
+/** Prefixes a line for a callout body; blank lines become a bare ">". */
+export function quote(line: string): string {
+	return line === "" ? ">" : "> " + line;
 }
