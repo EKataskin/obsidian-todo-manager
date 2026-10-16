@@ -2,8 +2,8 @@
 
 import { TaskBlock } from "./types";
 
-/** Matches a checkbox task line: indent, status char, rest of the text. */
-export const TASK_RE = /^(\s*)- \[(.)\] ?(.*)$/;
+/** Matches a checkbox task line: indent, list marker, status char, rest of the text. */
+export const TASK_RE = /^(\s*)([-*+]|\d+[.)]) \[(.)\] ?(.*)$/;
 
 const HEADING_RE = /^#{1,6}\s+/;
 /** Any list item: "-", "*", "+" or "1." / "1)" followed by a space. */
@@ -69,7 +69,7 @@ export function parseLines(lines: string[], closedChars = "xX"): ParsedLine[] {
 				raw,
 				isTask: true,
 				indent: m[1].length,
-				checked: closedChars.includes(m[2]),
+				checked: closedChars.includes(m[3]),
 				isListItem: true,
 			};
 		}

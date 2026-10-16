@@ -34,6 +34,8 @@ German or Russian when Obsidian is set to one of them.
   *Closed task characters* setting (`x`, `X` and `-` by default, so canceled
   `- [-]` tasks move too). Any other character, e.g. `- [ ]` or `- [/]`,
   means an **open** task.
+- Tasks may use any list marker: `-`, `*`, `+`, `1.` or `1)`. Numbers of
+  ordered tasks are kept as they are, the list is not renumbered.
 - A task moves only when it **and all of its sub-tasks** are closed. A
   closed sub-task under an open parent stays in place, and an open sub-task
   keeps its parent in the list.

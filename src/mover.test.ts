@@ -105,6 +105,26 @@ describe("moveCompletedTasks", () => {
 		);
 	});
 
+	it("moves tasks with * and + markers", () => {
+		const r = run(["## A", "* [x] a", "+ [x] b", "* [ ] c"]);
+		expect(r.text).toBe(["## A", "* [ ] c", "", "> [!done]- Выполнено", "> * [x] a", "> + [x] b"].join("\n"));
+	});
+
+	it("moves numbered tasks and keeps their numbers", () => {
+		const r = run(["## A", "1. [x] a", "2) [ ] b"]);
+		expect(r.text).toBe(["## A", "2) [ ] b", "", "> [!done]- Выполнено", "> 1. [x] a"].join("\n"));
+	});
+
+	it("puts the date at the start of a task with another marker", () => {
+		const r = run(["## A", "* [x] a"], { appendDate: true, datePosition: "start" });
+		expect(r.text).toContain("> * [x] ✅ 2026-10-17 a");
+	});
+
+	it("keeps a parent with an open * sub-task in the list", () => {
+		const text = ["## A", "- [x] p", "\t* [ ] c"];
+		expect(run(text)).toEqual({ text: text.join("\n"), movedCount: 0, returnedCount: 0 });
+	});
+
 	it("moves a canceled task", () => {
 		const r = run(["## A", "- [-] c", "- [ ] o"]);
 		expect(r.text).toBe(["## A", "- [ ] o", "", "> [!done]- Выполнено", "> - [-] c"].join("\n"));
@@ -158,6 +178,11 @@ describe("moveCompletedTasks with returnUnchecked", () => {
 	it("strips a template date from the start of an unchecked line", () => {
 		const r = run(["## A", "", "> [!done]- X", "> - [ ] [done:: 2026-10-01] p"], { ...back, dateTemplate: "[done:: {date}]" });
 		expect(r.text).toBe(["## A", "- [ ] p"].join("\n"));
+	});
+
+	it("returns a numbered task and strips its date", () => {
+		const r = run(["## A", "", "> [!done]- X", "> 1. [ ] p ✅ 2026-10-01"], back);
+		expect(r.text).toBe(["## A", "1. [ ] p"].join("\n"));
 	});
 
 	it("returns an in-progress task and strips its date", () => {

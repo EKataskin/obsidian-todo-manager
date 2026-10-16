@@ -28,10 +28,10 @@ function addDateToBlock(blockLines: string[], opts: MoveOptions): string[] {
 	return blockLines.map((line) => {
 		const m = line.match(TASK_RE);
 		if (!m) return line;
-		if (!opts.closedChars.includes(m[2]) || re.test(line)) return line;
+		if (!opts.closedChars.includes(m[3]) || re.test(line)) return line;
 		if (opts.datePosition === "start") {
-			const text = m[3].trim();
-			return `${m[1]}- [${m[2]}] ${stamp}${text ? " " + text : ""}`;
+			const text = m[4].trim();
+			return `${m[1]}${m[2]} [${m[3]}] ${stamp}${text ? " " + text : ""}`;
 		}
 		return line.replace(/\s*$/, "") + " " + stamp;
 	});
@@ -80,7 +80,7 @@ function stripDateFromOpen(blockLines: string[], opts: MoveOptions): string[] {
 	const re = new RegExp("\\s*" + dateRegex(opts.dateTemplate).source);
 	return blockLines.map((line) => {
 		const m = line.match(TASK_RE);
-		if (!m || opts.closedChars.includes(m[2])) return line;
+		if (!m || opts.closedChars.includes(m[3])) return line;
 		return line.replace(re, "");
 	});
 }
