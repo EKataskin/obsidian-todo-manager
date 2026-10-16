@@ -15,17 +15,26 @@ import {
 	unquote,
 } from "./taskParser";
 
-/** Detects an already-present "✅ YYYY-MM-DD" completion date. */
-const DATE_RE = /✅\s*\d{4}-\d{2}-\d{2}/;
+/** Regex for a completion date written with the template ("{date}" → YYYY-MM-DD). */
+function dateRegex(template: string): RegExp {
+	const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	return new RegExp(template.split("{date}").map(escape).join("\\d{4}-\\d{2}-\\d{2}"));
+}
 
-/** Appends "✅ today" to checked checkbox lines that do not yet have a date. */
-function appendDateToBlock(blockLines: string[], today: string): string[] {
+/** Adds the templated date to checked checkbox lines that do not yet have one. */
+function addDateToBlock(blockLines: string[], opts: MoveOptions): string[] {
+	const re = dateRegex(opts.dateTemplate);
+	const stamp = opts.dateTemplate.split("{date}").join(opts.today);
 	return blockLines.map((line) => {
 		const m = line.match(TASK_RE);
 		if (!m) return line;
 		const checked = m[2] === "x" || m[2] === "X";
-		if (!checked || DATE_RE.test(line)) return line;
-		return line.replace(/\s*$/, "") + " ✅ " + today;
+		if (!checked || re.test(line)) return line;
+		if (opts.datePosition === "start") {
+			const text = m[3].trim();
+			return `${m[1]}- [${m[2]}] ${stamp}${text ? " " + text : ""}`;
+		}
+		return line.replace(/\s*$/, "") + " " + stamp;
 	});
 }
 
@@ -67,12 +76,13 @@ function hasUncheckedTask(parsed: ParsedLine[], block: TaskBlock): boolean {
 	return false;
 }
 
-/** Removes the "✅ YYYY-MM-DD" completion date from unchecked task lines. */
-function stripDateFromUnchecked(blockLines: string[]): string[] {
+/** Removes the templated completion date from unchecked task lines. */
+function stripDateFromUnchecked(blockLines: string[], template: string): string[] {
+	const re = new RegExp("\\s*" + dateRegex(template).source);
 	return blockLines.map((line) => {
 		const m = line.match(TASK_RE);
 		if (!m || m[2] !== " ") return line;
-		return line.replace(/\s*✅\s*\d{4}-\d{2}-\d{2}/, "");
+		return line.replace(re, "");
 	});
 }
 
@@ -103,7 +113,7 @@ function processSection(
 		for (const b of topLevelBlocks(inner, innerParsed)) {
 			if (!hasUncheckedTask(innerParsed, b)) continue;
 			for (let i = b.start; i <= b.end; i++) removed.add(bodyStart + i);
-			returnedLines.push(...stripDateFromUnchecked(dedent(inner.slice(b.start, b.end + 1))));
+			returnedLines.push(...stripDateFromUnchecked(dedent(inner.slice(b.start, b.end + 1)), opts.dateTemplate));
 			returned++;
 		}
 	}
@@ -113,7 +123,7 @@ function processSection(
 	for (const b of done) {
 		for (let i = b.start; i <= b.end; i++) removed.add(i);
 		let blockLines = dedent(content.slice(b.start, b.end + 1));
-		if (opts.appendDate) blockLines = appendDateToBlock(blockLines, opts.today);
+		if (opts.appendDate) blockLines = addDateToBlock(blockLines, opts);
 		moved.push(...blockLines.map(quote));
 	}
 

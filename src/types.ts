@@ -5,8 +5,12 @@ export interface DoneMoverSettings {
 	autoMode: boolean;
 	/** First line of the callout that collects completed tasks (e.g. "> [!done]- Done"). */
 	calloutHeader: string;
-	/** When on, a "✅ YYYY-MM-DD" completion date is appended to moved checked lines. */
+	/** When on, a completion date is added to moved checked lines. */
 	appendCompletionDate: boolean;
+	/** Where the date goes: right after the checkbox or at the end of the line. */
+	datePosition: DatePosition;
+	/** Date text; "{date}" is replaced with YYYY-MM-DD. */
+	dateTemplate: string;
 	/** Vault paths (folders or files) in which auto mode stays inactive. */
 	excludedPaths: string[];
 }
@@ -15,13 +19,20 @@ export const DEFAULT_SETTINGS: DoneMoverSettings = {
 	autoMode: false,
 	calloutHeader: "> [!done]- Done",
 	appendCompletionDate: true,
+	datePosition: "end",
+	dateTemplate: "<small>[{date}]</small>",
 	excludedPaths: [],
 };
+
+export type DatePosition = "start" | "end";
 
 /** Options consumed by the pure mover functions. */
 export interface MoveOptions {
 	calloutHeader: string;
 	appendDate: boolean;
+	datePosition: DatePosition;
+	/** Must contain "{date}". */
+	dateTemplate: string;
 	/** When on, blocks with an unchecked line go back from the callout to the list. */
 	returnUnchecked: boolean;
 	/** Today's date as YYYY-MM-DD. Passed in so the logic stays deterministic/testable. */

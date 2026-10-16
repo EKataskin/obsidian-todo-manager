@@ -80,6 +80,10 @@ export default class DoneMoverPlugin extends Plugin {
 					? this.settings.calloutHeader
 					: DEFAULT_SETTINGS.calloutHeader,
 			appendDate: this.settings.appendCompletionDate,
+			datePosition: this.settings.datePosition,
+			dateTemplate: this.settings.dateTemplate.includes("{date}")
+				? this.settings.dateTemplate
+				: DEFAULT_SETTINGS.dateTemplate,
 			returnUnchecked,
 			today: formatToday(),
 		};

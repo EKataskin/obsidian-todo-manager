@@ -34,8 +34,9 @@ German or Russian when Obsidian is set to one of them.
   checked sub-task under an unchecked parent stays in place.
 - **Moving back:** uncheck a task inside the callout and run the same command.
   Every block with an unchecked line returns to the end of its list, and the
-  completion date is removed from its unchecked lines. A callout that becomes
-  empty is removed. Unchecking alone changes nothing.
+  completion date (matched by the current template) is removed from its
+  unchecked lines. A callout that becomes empty is removed. Unchecking alone
+  changes nothing.
 - The callout is found by its type (`[!done]` by default), so changing the
   header text later does not lose existing blocks.
 
@@ -45,7 +46,9 @@ German or Russian when Obsidian is set to one of them.
 |---------|-------------|---------|
 | Auto mode | Move completed tasks automatically after checking (never moves them back) | off |
 | Done block header | First line of the callout, must look like `> [!type]...` | `> [!done]- Done` |
-| Append completion date | Append `✅ YYYY-MM-DD` to moved, checked lines | on |
+| Append completion date | Add the completion date to moved, checked lines | on |
+| Date position | At the start (after the checkbox) or at the end of the line | end |
+| Date template | Text of the date, `{date}` becomes `YYYY-MM-DD` | `<small>[{date}]</small>` |
 | Excluded folders/files | Vault paths (one per line) where auto mode stays inactive | empty |
 
 ## Disclosures
@@ -67,7 +70,7 @@ npm run build     # produces main.js
 
 ## Install into a vault
 
-Copy `main.js` and `manifest.json` into
+Copy `main.js`, `manifest.json` and `styles.css` into
 `<Vault>/.obsidian/plugins/todo-manager/`, then enable the plugin under
 *Settings → Community plugins*.
 

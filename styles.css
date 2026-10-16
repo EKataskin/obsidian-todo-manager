@@ -1,0 +1,6 @@
+/* Settings that depend on the toggle above them. */
+.todo-manager-child-setting {
+	margin-left: var(--size-4-6);
+	padding-left: var(--size-4-3);
+	border-left: 2px solid var(--background-modifier-border);
+}

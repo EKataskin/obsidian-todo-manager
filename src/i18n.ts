@@ -14,6 +14,12 @@ export interface Strings {
 	settingCalloutDesc: string;
 	settingDateName: string;
 	settingDateDesc: string;
+	settingDatePositionName: string;
+	settingDatePositionDesc: string;
+	datePositionStart: string;
+	datePositionEnd: string;
+	settingDateTemplateName: string;
+	settingDateTemplateDesc: string;
 	settingExcludedName: string;
 	settingExcludedDesc: string;
 }
@@ -32,7 +38,14 @@ const en: Strings = {
 		'First line of the callout that holds completed tasks, e.g. "> [!done]- Done". ' +
 		"Existing blocks are found by callout type.",
 	settingDateName: "Append completion date",
-	settingDateDesc: 'Appends "✅ YYYY-MM-DD" to every moved, checked line.',
+	settingDateDesc: "Adds the completion date to every moved, checked line.",
+	settingDatePositionName: "Date position",
+	settingDatePositionDesc: "Where the date goes in the task line.",
+	datePositionStart: "At the start (after the checkbox)",
+	datePositionEnd: "At the end",
+	settingDateTemplateName: "Date template",
+	settingDateTemplateDesc:
+		'Text of the date, "{date}" is replaced with YYYY-MM-DD, e.g. "✅ {date}" or "[completion:: {date}]".',
 	settingExcludedName: "Excluded folders/files",
 	settingExcludedDesc:
 		"One vault path per line. Auto mode stays inactive in these folders " +
@@ -53,7 +66,14 @@ const de: Strings = {
 		"Erste Zeile des Callouts für erledigte Aufgaben, z. B. „> [!done]- Erledigt\". " +
 		"Vorhandene Blöcke werden am Callout-Typ erkannt.",
 	settingDateName: "Erledigt-Datum anhängen",
-	settingDateDesc: 'Hängt "✅ JJJJ-MM-TT" an jede verschobene, abgehakte Zeile an.',
+	settingDateDesc: "Fügt jeder verschobenen, abgehakten Zeile das Erledigt-Datum hinzu.",
+	settingDatePositionName: "Position des Datums",
+	settingDatePositionDesc: "Wo das Datum in der Aufgabenzeile steht.",
+	datePositionStart: "Am Anfang (nach dem Kontrollkästchen)",
+	datePositionEnd: "Am Ende",
+	settingDateTemplateName: "Datumsvorlage",
+	settingDateTemplateDesc:
+		'Text des Datums, "{date}" wird durch JJJJ-MM-TT ersetzt, z. B. "✅ {date}" oder "[completion:: {date}]".',
 	settingExcludedName: "Ausgeschlossene Ordner/Dateien",
 	settingExcludedDesc:
 		"Ein Vault-Pfad pro Zeile. Der Auto-Modus bleibt in diesen Ordnern " +
@@ -74,7 +94,14 @@ const ru: Strings = {
 		"Первая строка callout для выполненных задач, например «> [!done]- Выполнено». " +
 		"Существующий блок находится по типу callout.",
 	settingDateName: "Добавлять дату выполнения",
-	settingDateDesc: "Дописывает «✅ ГГГГ-ММ-ДД» к каждой перенесённой отмеченной строке.",
+	settingDateDesc: "Добавляет дату выполнения к каждой перенесённой отмеченной строке.",
+	settingDatePositionName: "Положение даты",
+	settingDatePositionDesc: "Куда ставить дату в строке задачи.",
+	datePositionStart: "В начале (после галочки)",
+	datePositionEnd: "В конце",
+	settingDateTemplateName: "Шаблон даты",
+	settingDateTemplateDesc:
+		"Текст даты, «{date}» заменяется на ГГГГ-ММ-ДД, например «✅ {date}» или «[completion:: {date}]».",
 	settingExcludedName: "Исключённые папки и файлы",
 	settingExcludedDesc:
 		"Один путь в хранилище на строку. Автоперенос не работает в этих папках " +

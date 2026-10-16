@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type DoneMoverPlugin from "../main";
 import { calloutType } from "./taskParser";
+import { DatePosition } from "./types";
 
 export class DoneMoverSettingTab extends PluginSettingTab {
 	plugin: DoneMoverPlugin;
@@ -48,9 +49,46 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.appendCompletionDate)
 					.onChange(async (value) => {
 						this.plugin.settings.appendCompletionDate = value;
+						dateChildren.forEach((el) => el.toggle(value));
 						await this.plugin.saveSettings();
 					})
 			);
+
+		const datePosition = new Setting(containerEl)
+			.setName(s.settingDatePositionName)
+			.setDesc(s.settingDatePositionDesc)
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("start", s.datePositionStart)
+					.addOption("end", s.datePositionEnd)
+					.setValue(this.plugin.settings.datePosition)
+					.onChange(async (value) => {
+						this.plugin.settings.datePosition = value as DatePosition;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		const dateTemplate = new Setting(containerEl)
+			.setName(s.settingDateTemplateName)
+			.setDesc(s.settingDateTemplateDesc)
+			.addText((text) =>
+				text
+					.setPlaceholder("<small>[{date}]</small>")
+					.setValue(this.plugin.settings.dateTemplate)
+					.onChange(async (value) => {
+						// Only a template with "{date}" is saved; partial input is ignored.
+						if (!value.includes("{date}")) return;
+						this.plugin.settings.dateTemplate = value.trim();
+						await this.plugin.saveSettings();
+					})
+			);
+
+		// Date options are shown as children of the date toggle and only while it is on.
+		const dateChildren = [datePosition.settingEl, dateTemplate.settingEl];
+		dateChildren.forEach((el) => {
+			el.addClass("todo-manager-child-setting");
+			el.toggle(this.plugin.settings.appendCompletionDate);
+		});
 
 		new Setting(containerEl)
 			.setName(s.settingExcludedName)

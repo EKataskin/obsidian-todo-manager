@@ -5,6 +5,8 @@ import { MoveOptions } from "./types";
 const OPTS: MoveOptions = {
 	calloutHeader: "> [!done]- Выполнено",
 	appendDate: false,
+	datePosition: "end",
+	dateTemplate: "✅ {date}",
 	returnUnchecked: false,
 	today: "2026-10-17",
 };
@@ -40,6 +42,22 @@ describe("moveCompletedTasks", () => {
 	it("appends the completion date when enabled", () => {
 		const r = run(["## A", "- [x] a"], { appendDate: true });
 		expect(r.text).toContain("> - [x] a ✅ 2026-10-17");
+	});
+
+	it("puts the date from the template at the start of the task text", () => {
+		const r = run(["## A", "- [x] a"], { appendDate: true, datePosition: "start", dateTemplate: "[done:: {date}]" });
+		expect(r.text).toContain("> - [x] [done:: 2026-10-17] a");
+	});
+
+	it("puts the date from the template at the end of the line", () => {
+		const r = run(["## A", "- [x] a"], { appendDate: true, dateTemplate: "({date})" });
+		expect(r.text).toContain("> - [x] a (2026-10-17)");
+	});
+
+	it("does not add a second date when the template date is already there", () => {
+		const r = run(["## A", "- [x] [done:: 2026-10-01] a"], { appendDate: true, datePosition: "start", dateTemplate: "[done:: {date}]" });
+		expect(r.text).toContain("> - [x] [done:: 2026-10-01] a");
+		expect(r.text).not.toContain("2026-10-17");
 	});
 
 	it("finds an existing callout by type and keeps its header", () => {
@@ -109,6 +127,11 @@ describe("moveCompletedTasks with returnUnchecked", () => {
 	it("strips the date only from unchecked lines", () => {
 		const r = run(["## A", "", "> [!done]- X", "> - [ ] p ✅ 2026-10-01", "> \t- [x] c ✅ 2026-10-01"], back);
 		expect(r.text).toBe(["## A", "- [ ] p", "\t- [x] c ✅ 2026-10-01"].join("\n"));
+	});
+
+	it("strips a template date from the start of an unchecked line", () => {
+		const r = run(["## A", "", "> [!done]- X", "> - [ ] [done:: 2026-10-01] p"], { ...back, dateTemplate: "[done:: {date}]" });
+		expect(r.text).toBe(["## A", "- [ ] p"].join("\n"));
 	});
 
 	it("keeps a blank line between a returned task and the callout", () => {
