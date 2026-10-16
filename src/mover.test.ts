@@ -74,6 +74,22 @@ describe("moveCompletedTasks", () => {
 		const r = moveCompletedTasks("## A\r\n- [x] a\r\n", OPTS);
 		expect(r.text).toBe("## A\r\n\r\n> [!done]- Выполнено\r\n> - [x] a\r\n");
 	});
+
+	it("ignores headings, tasks and callouts inside code fences", () => {
+		const r = run(["## Setup", "- [x] install", "- [ ] configure", "```bash", "# install deps", "- [x] sample", "> [!done]- Done", "```"]);
+		expect(r.movedCount).toBe(1);
+		expect(r.text).toBe(
+			[
+				"## Setup", "- [ ] configure", "```bash", "# install deps", "- [x] sample", "> [!done]- Done", "```",
+				"", "> [!done]- Выполнено", "> - [x] install",
+			].join("\n")
+		);
+	});
+
+	it("keeps a done task under a plain bullet in place", () => {
+		const text = ["## A", "- Groceries", "\t- [x] milk", "\t- [ ] bread"];
+		expect(run(text)).toEqual({ text: text.join("\n"), movedCount: 0, returnedCount: 0 });
+	});
 });
 
 describe("moveCompletedTasks with returnUnchecked", () => {
@@ -93,6 +109,11 @@ describe("moveCompletedTasks with returnUnchecked", () => {
 	it("strips the date only from unchecked lines", () => {
 		const r = run(["## A", "", "> [!done]- X", "> - [ ] p ✅ 2026-10-01", "> \t- [x] c ✅ 2026-10-01"], back);
 		expect(r.text).toBe(["## A", "- [ ] p", "\t- [x] c ✅ 2026-10-01"].join("\n"));
+	});
+
+	it("leaves a plain bullet in the callout alone", () => {
+		const text = ["## A", "", "> [!done]- X", "> - note", "> - [x] d"];
+		expect(run(text, back)).toEqual({ text: text.join("\n"), movedCount: 0, returnedCount: 0 });
 	});
 
 	it("moves and returns in one run", () => {

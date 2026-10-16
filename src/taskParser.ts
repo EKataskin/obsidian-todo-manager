@@ -6,6 +6,9 @@ import { TaskBlock } from "./types";
 export const TASK_RE = /^(\s*)- \[([ xX])\] ?(.*)$/;
 
 const HEADING_RE = /^#{1,6}\s+/;
+/** Any list item: "-", "*", "+" or "1." / "1)" followed by a space. */
+const LIST_ITEM_RE = /^\s*([-*+]|\d+[.)])\s/;
+const FENCE_RE = /^\s*(`{3,}|~{3,})/;
 /** A thematic break: a line of only -, * or _ (3 or more), optionally spaced. */
 const THEMATIC_BREAK_RE = /^\s*([-*_])(\s*\1){2,}\s*$/;
 
@@ -16,6 +19,8 @@ export interface ParsedLine {
 	indent: number;
 	/** Whether a task line's checkbox is checked. False for non-task lines. */
 	checked: boolean;
+	/** Whether the line is a list item (task or plain bullet) outside code fences. */
+	isListItem: boolean;
 }
 
 /** Splits text into lines and remembers the line ending so it can be restored. */
@@ -37,19 +42,41 @@ export function isThematicBreak(line: string): boolean {
 	return THEMATIC_BREAK_RE.test(line);
 }
 
-/** Classifies every line as a task line or not. */
+/** Marks the lines of fenced code blocks (``` or ~~~), fence lines included. */
+export function fenceMask(lines: string[]): boolean[] {
+	let fence: string | null = null;
+	return lines.map((line) => {
+		const m = line.match(FENCE_RE);
+		if (fence === null) {
+			if (m) fence = m[1];
+			return fence !== null;
+		}
+		if (m && m[1][0] === fence[0] && m[1].length >= fence.length) fence = null;
+		return true;
+	});
+}
+
+/** Classifies every line; lines inside code fences are never tasks or list items. */
 export function parseLines(lines: string[]): ParsedLine[] {
-	return lines.map((raw) => {
-		const m = raw.match(TASK_RE);
+	const inFence = fenceMask(lines);
+	return lines.map((raw, i) => {
+		const m = inFence[i] ? null : raw.match(TASK_RE);
 		if (m) {
 			return {
 				raw,
 				isTask: true,
 				indent: m[1].length,
 				checked: m[2] === "x" || m[2] === "X",
+				isListItem: true,
 			};
 		}
-		return { raw, isTask: false, indent: leadingWhitespace(raw), checked: false };
+		return {
+			raw,
+			isTask: false,
+			indent: leadingWhitespace(raw),
+			checked: false,
+			isListItem: !inFence[i] && LIST_ITEM_RE.test(raw),
+		};
 	});
 }
 
@@ -76,15 +103,15 @@ export function blockEnd(lines: string[], startIndex: number): number {
 }
 
 /**
- * Finds the outermost task blocks across the whole document, in document
- * order. Nested sub-tasks are contained within their parent's block and are
- * not returned separately.
+ * Finds the outermost list-item blocks (tasks and plain bullets) in document
+ * order. Nested items stay inside their parent's block, so a task under a
+ * plain bullet is never returned on its own.
  */
 export function topLevelBlocks(lines: string[], parsed: ParsedLine[]): TaskBlock[] {
 	const blocks: TaskBlock[] = [];
 	let i = 0;
 	while (i < lines.length) {
-		if (parsed[i].isTask) {
+		if (parsed[i].isListItem) {
 			const end = blockEnd(lines, i);
 			blocks.push({ start: i, end });
 			i = end + 1;
@@ -132,8 +159,9 @@ function frontmatterEnd(lines: string[]): number {
 export function splitSections(lines: string[]): Section[] {
 	const sections: Section[] = [];
 	let start = frontmatterEnd(lines);
+	const inFence = fenceMask(lines);
 	for (let i = start; i < lines.length; i++) {
-		if (isHeading(lines[i])) {
+		if (!inFence[i] && isHeading(lines[i])) {
 			sections.push({ contentStart: start, contentEnd: i });
 			start = i + 1;
 		}
@@ -158,8 +186,9 @@ export interface CalloutRange {
 
 /** Finds the first callout of the given type inside a section. */
 export function findCallout(lines: string[], section: Section, type: string): CalloutRange | null {
+	const inFence = fenceMask(lines);
 	for (let i = section.contentStart; i < section.contentEnd; i++) {
-		if (calloutType(lines[i]) !== type) continue;
+		if (inFence[i] || calloutType(lines[i]) !== type) continue;
 		let end = i;
 		while (end + 1 < section.contentEnd && lines[end + 1].startsWith(">")) end++;
 		return { header: i, end };

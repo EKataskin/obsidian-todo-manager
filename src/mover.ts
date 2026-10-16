@@ -1,7 +1,8 @@
 // Pure task-moving logic — no Obsidian imports, fully unit-testable.
 
-import { MoveOptions, MoveResult } from "./types";
+import { MoveOptions, MoveResult, TaskBlock } from "./types";
 import {
+	ParsedLine,
 	TASK_RE,
 	calloutType,
 	findCallout,
@@ -58,6 +59,14 @@ interface SectionResult {
 	returned: number;
 }
 
+/** True when the block contains at least one unchecked task line. */
+function hasUncheckedTask(parsed: ParsedLine[], block: TaskBlock): boolean {
+	for (let i = block.start; i <= block.end; i++) {
+		if (parsed[i].isTask && !parsed[i].checked) return true;
+	}
+	return false;
+}
+
 /** Removes the "✅ YYYY-MM-DD" completion date from unchecked task lines. */
 function stripDateFromUnchecked(blockLines: string[]): string[] {
 	return blockLines.map((line) => {
@@ -92,7 +101,7 @@ function processSection(
 		const inner = content.slice(bodyStart, callout.end + 1).map(unquote);
 		const innerParsed = parseLines(inner);
 		for (const b of topLevelBlocks(inner, innerParsed)) {
-			if (isBlockFullyDone(innerParsed, b)) continue;
+			if (!hasUncheckedTask(innerParsed, b)) continue;
 			for (let i = b.start; i <= b.end; i++) removed.add(bodyStart + i);
 			returnedLines.push(...stripDateFromUnchecked(dedent(inner.slice(b.start, b.end + 1))));
 			returned++;
