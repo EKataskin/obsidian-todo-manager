@@ -14,7 +14,9 @@ const AUTO_MOVE_DEBOUNCE_MS = 400;
  */
 function detectLang(): Lang {
 	const locale = (moment.locale() || "en").toLowerCase();
-	return locale.startsWith("de") ? "de" : "en";
+	if (locale.startsWith("de")) return "de";
+	if (locale.startsWith("ru")) return "ru";
+	return "en";
 }
 
 /** Returns today's local date as YYYY-MM-DD. */

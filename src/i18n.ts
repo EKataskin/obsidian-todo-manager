@@ -1,7 +1,7 @@
-// UI string localization. English is the default; German is used when
-// Obsidian's interface language is German.
+// UI string localization. English is the default; German or Russian is used
+// when Obsidian's interface language is German or Russian.
 
-export type Lang = "en" | "de";
+export type Lang = "en" | "de" | "ru";
 
 export interface Strings {
 	cmdMoveCompleted: string;
@@ -64,7 +64,29 @@ const de: Strings = {
 		"(inklusive Unterordnern) und Dateien inaktiv. Manuelle Befehle funktionieren weiterhin.",
 };
 
-const LANGUAGES: Record<Lang, Strings> = { en, de };
+const ru: Strings = {
+	cmdMoveCompleted: "Перенести выполненные задачи в Done",
+	cmdMoveSelection: "Перенести выделенное в Done",
+	noticeMoved: (count, heading) => `Перенесено задач в «${heading}»: ${count}.`,
+	noticeAutoMoved: (count) => `Автоматически перенесено выполненных задач: ${count}.`,
+	noticeNoCompleted: "Полностью выполненных задач не найдено.",
+	noticeNoSelection: "В выделении нет задач.",
+	settingAutoModeName: "Автоперенос",
+	settingAutoModeDesc:
+		"Переносить полностью выполненные задачи автоматически, как только они " +
+		"отмечены (только если отмечены и все подзадачи).",
+	settingHeadingName: "Заголовок Done",
+	settingHeadingDesc:
+		"Название заголовка, под который переносятся выполненные задачи.",
+	settingDateName: "Добавлять дату выполнения",
+	settingDateDesc: "Дописывает «✅ ГГГГ-ММ-ДД» к каждой перенесённой отмеченной строке.",
+	settingExcludedName: "Исключённые папки и файлы",
+	settingExcludedDesc:
+		"Один путь в хранилище на строку. Автоперенос не работает в этих папках " +
+		"(включая вложенные) и файлах. Ручные команды работают как обычно.",
+};
+
+const LANGUAGES: Record<Lang, Strings> = { en, de, ru };
 
 /** Returns the UI strings for the given language. */
 export function getStrings(lang: Lang): Strings {
