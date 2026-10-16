@@ -12,6 +12,8 @@ export interface Strings {
 	settingAutoModeDesc: string;
 	settingCalloutName: string;
 	settingCalloutDesc: string;
+	settingClosedName: string;
+	settingClosedDesc: string;
 	settingDateName: string;
 	settingDateDesc: string;
 	settingDatePositionName: string;
@@ -37,8 +39,12 @@ const en: Strings = {
 	settingCalloutDesc:
 		'First line of the callout that holds completed tasks, e.g. "> [!done]- Done". ' +
 		"Existing blocks are found by callout type.",
+	settingClosedName: "Closed task characters",
+	settingClosedDesc:
+		'Characters in the brackets that mark a task as closed, e.g. "x" in "- [x]". ' +
+		"Closed tasks are moved to the done block, any other character means an open task.",
 	settingDateName: "Append completion date",
-	settingDateDesc: "Adds the completion date to every moved, checked line.",
+	settingDateDesc: "Adds the completion date to every moved, closed task line.",
 	settingDatePositionName: "Date position",
 	settingDatePositionDesc: "Where the date goes in the task line.",
 	datePositionStart: "At the start (after the checkbox)",
@@ -65,8 +71,12 @@ const de: Strings = {
 	settingCalloutDesc:
 		"Erste Zeile des Callouts für erledigte Aufgaben, z. B. „> [!done]- Erledigt\". " +
 		"Vorhandene Blöcke werden am Callout-Typ erkannt.",
+	settingClosedName: "Zeichen für abgeschlossene Aufgaben",
+	settingClosedDesc:
+		'Zeichen in den Klammern, die eine Aufgabe als abgeschlossen markieren, z. B. "x" in "- [x]". ' +
+		"Abgeschlossene Aufgaben werden in den Erledigt-Block verschoben, jedes andere Zeichen bedeutet eine offene Aufgabe.",
 	settingDateName: "Erledigt-Datum anhängen",
-	settingDateDesc: "Fügt jeder verschobenen, abgehakten Zeile das Erledigt-Datum hinzu.",
+	settingDateDesc: "Fügt jeder verschobenen, abgeschlossenen Aufgabe das Erledigt-Datum hinzu.",
 	settingDatePositionName: "Position des Datums",
 	settingDatePositionDesc: "Wo das Datum in der Aufgabenzeile steht.",
 	datePositionStart: "Am Anfang (nach dem Kontrollkästchen)",
@@ -93,8 +103,12 @@ const ru: Strings = {
 	settingCalloutDesc:
 		"Первая строка callout для выполненных задач, например «> [!done]- Выполнено». " +
 		"Существующий блок находится по типу callout.",
+	settingClosedName: "Символы закрытых задач",
+	settingClosedDesc:
+		"Символы в скобках, которые означают закрытую задачу, например «x» в «- [x]». " +
+		"Закрытые задачи переносятся в блок выполненных, любой другой символ означает открытую задачу.",
 	settingDateName: "Добавлять дату выполнения",
-	settingDateDesc: "Добавляет дату выполнения к каждой перенесённой отмеченной строке.",
+	settingDateDesc: "Добавляет дату выполнения к каждой перенесённой закрытой задаче.",
 	settingDatePositionName: "Положение даты",
 	settingDatePositionDesc: "Куда ставить дату в строке задачи.",
 	datePositionStart: "В начале (после галочки)",

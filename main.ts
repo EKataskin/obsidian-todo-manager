@@ -84,6 +84,7 @@ export default class DoneMoverPlugin extends Plugin {
 			dateTemplate: this.settings.dateTemplate.includes("{date}")
 				? this.settings.dateTemplate
 				: DEFAULT_SETTINGS.dateTemplate,
+			closedChars: this.settings.closedChars || DEFAULT_SETTINGS.closedChars,
 			returnUnchecked,
 			today: formatToday(),
 		};

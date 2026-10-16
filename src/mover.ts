@@ -21,15 +21,14 @@ function dateRegex(template: string): RegExp {
 	return new RegExp(template.split("{date}").map(escape).join("\\d{4}-\\d{2}-\\d{2}"));
 }
 
-/** Adds the templated date to checked checkbox lines that do not yet have one. */
+/** Adds the templated date to closed task lines that do not yet have one. */
 function addDateToBlock(blockLines: string[], opts: MoveOptions): string[] {
 	const re = dateRegex(opts.dateTemplate);
 	const stamp = opts.dateTemplate.split("{date}").join(opts.today);
 	return blockLines.map((line) => {
 		const m = line.match(TASK_RE);
 		if (!m) return line;
-		const checked = m[2] === "x" || m[2] === "X";
-		if (!checked || re.test(line)) return line;
+		if (!opts.closedChars.includes(m[2]) || re.test(line)) return line;
 		if (opts.datePosition === "start") {
 			const text = m[3].trim();
 			return `${m[1]}- [${m[2]}] ${stamp}${text ? " " + text : ""}`;
@@ -76,12 +75,12 @@ function hasUncheckedTask(parsed: ParsedLine[], block: TaskBlock): boolean {
 	return false;
 }
 
-/** Removes the templated completion date from unchecked task lines. */
-function stripDateFromUnchecked(blockLines: string[], template: string): string[] {
-	const re = new RegExp("\\s*" + dateRegex(template).source);
+/** Removes the templated completion date from open task lines. */
+function stripDateFromOpen(blockLines: string[], opts: MoveOptions): string[] {
+	const re = new RegExp("\\s*" + dateRegex(opts.dateTemplate).source);
 	return blockLines.map((line) => {
 		const m = line.match(TASK_RE);
-		if (!m || m[2] !== " ") return line;
+		if (!m || opts.closedChars.includes(m[2])) return line;
 		return line.replace(re, "");
 	});
 }
@@ -98,7 +97,7 @@ function processSection(
 	type: string,
 	opts: MoveOptions
 ): SectionResult | null {
-	const parsed = parseLines(content);
+	const parsed = parseLines(content, opts.closedChars);
 	const blocks = topLevelBlocks(content, parsed);
 	const done = blocks.filter((b) => isBlockFullyDone(parsed, b));
 	const callout = findCallout(content, { contentStart: 0, contentEnd: content.length }, type);
@@ -109,11 +108,11 @@ function processSection(
 	if (opts.returnUnchecked && callout) {
 		const bodyStart = callout.header + 1;
 		const inner = content.slice(bodyStart, callout.end + 1).map(unquote);
-		const innerParsed = parseLines(inner);
+		const innerParsed = parseLines(inner, opts.closedChars);
 		for (const b of topLevelBlocks(inner, innerParsed)) {
 			if (!hasUncheckedTask(innerParsed, b)) continue;
 			for (let i = b.start; i <= b.end; i++) removed.add(bodyStart + i);
-			returnedLines.push(...stripDateFromUnchecked(dedent(inner.slice(b.start, b.end + 1)), opts.dateTemplate));
+			returnedLines.push(...stripDateFromOpen(dedent(inner.slice(b.start, b.end + 1)), opts));
 			returned++;
 		}
 	}

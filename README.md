@@ -30,13 +30,18 @@ German or Russian when Obsidian is set to one of them.
 
 - Newly moved tasks go to the **top** of the callout. If the list has no
   callout yet, one is created after the list, separated by a blank line.
-- A task moves only when it **and all of its sub-tasks** are checked. A
-  checked sub-task under an unchecked parent stays in place.
-- **Moving back:** uncheck a task inside the callout and run the same command.
-  Every block with an unchecked line returns to the end of its list, and the
-  completion date (matched by the current template) is removed from its
-  unchecked lines. A callout that becomes empty is removed. Unchecking alone
-  changes nothing.
+- A task is **closed** when the character in its brackets is listed in the
+  *Closed task characters* setting (`x`, `X` and `-` by default, so canceled
+  `- [-]` tasks move too). Any other character, e.g. `- [ ]` or `- [/]`,
+  means an **open** task.
+- A task moves only when it **and all of its sub-tasks** are closed. A
+  closed sub-task under an open parent stays in place, and an open sub-task
+  keeps its parent in the list.
+- **Moving back:** reopen a task inside the callout (e.g. uncheck it) and run
+  the same command. Every block with an open task returns to the end of its
+  list, and the completion date (matched by the current template) is removed
+  from its open lines. A callout that becomes empty is removed. Unchecking
+  alone changes nothing.
 - The callout is found by its type (`[!done]` by default), so changing the
   header text later does not lose existing blocks.
 
@@ -46,7 +51,8 @@ German or Russian when Obsidian is set to one of them.
 |---------|-------------|---------|
 | Auto mode | Move completed tasks automatically after checking (never moves them back) | off |
 | Done block header | First line of the callout, must look like `> [!type]...` | `> [!done]- Done` |
-| Append completion date | Add the completion date to moved, checked lines | on |
+| Closed task characters | Characters in the brackets that mark a task as closed; any other character means open | `xX-` |
+| Append completion date | Add the completion date to moved, closed task lines | on |
 | Date position | At the start (after the checkbox) or at the end of the line | end |
 | Date template | Text of the date, `{date}` becomes `YYYY-MM-DD` | `<small>[{date}]</small>` |
 | Excluded folders/files | Vault paths (one per line) where auto mode stays inactive | empty |

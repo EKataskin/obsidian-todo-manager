@@ -11,6 +11,8 @@ export interface DoneMoverSettings {
 	datePosition: DatePosition;
 	/** Date text; "{date}" is replaced with YYYY-MM-DD. */
 	dateTemplate: string;
+	/** Status chars of closed tasks ("x" in "- [x]"); any other char means open. */
+	closedChars: string;
 	/** Vault paths (folders or files) in which auto mode stays inactive. */
 	excludedPaths: string[];
 }
@@ -21,6 +23,7 @@ export const DEFAULT_SETTINGS: DoneMoverSettings = {
 	appendCompletionDate: true,
 	datePosition: "end",
 	dateTemplate: "<small>[{date}]</small>",
+	closedChars: "xX-",
 	excludedPaths: [],
 };
 
@@ -33,6 +36,8 @@ export interface MoveOptions {
 	datePosition: DatePosition;
 	/** Must contain "{date}". */
 	dateTemplate: string;
+	/** Must not be empty. */
+	closedChars: string;
 	/** When on, blocks with an unchecked line go back from the callout to the list. */
 	returnUnchecked: boolean;
 	/** Today's date as YYYY-MM-DD. Passed in so the logic stays deterministic/testable. */

@@ -7,6 +7,7 @@ const OPTS: MoveOptions = {
 	appendDate: false,
 	datePosition: "end",
 	dateTemplate: "✅ {date}",
+	closedChars: "xX-",
 	returnUnchecked: false,
 	today: "2026-10-17",
 };
@@ -104,6 +105,31 @@ describe("moveCompletedTasks", () => {
 		);
 	});
 
+	it("moves a canceled task", () => {
+		const r = run(["## A", "- [-] c", "- [ ] o"]);
+		expect(r.text).toBe(["## A", "- [ ] o", "", "> [!done]- Выполнено", "> - [-] c"].join("\n"));
+	});
+
+	it("keeps a done parent with an in-progress sub-task in the list", () => {
+		const text = ["## A", "- [x] p", "\t- [/] c"];
+		expect(run(text)).toEqual({ text: text.join("\n"), movedCount: 0, returnedCount: 0 });
+	});
+
+	it("dates every closed status", () => {
+		const r = run(["## A", "- [-] c"], { appendDate: true });
+		expect(r.text).toContain("> - [-] c ✅ 2026-10-17");
+	});
+
+	it("treats a status missing from closedChars as open", () => {
+		const text = ["## A", "- [-] c"];
+		expect(run(text, { closedChars: "xX" })).toEqual({ text: text.join("\n"), movedCount: 0, returnedCount: 0 });
+	});
+
+	it("moves a parent whose sub-items use an extra closed status", () => {
+		const r = run(["## A", "- [x] p", "\t- [i] note"], { closedChars: "xX-i" });
+		expect(r.movedCount).toBe(1);
+	});
+
 	it("keeps a done task under a plain bullet in place", () => {
 		const text = ["## A", "- Groceries", "\t- [x] milk", "\t- [ ] bread"];
 		expect(run(text)).toEqual({ text: text.join("\n"), movedCount: 0, returnedCount: 0 });
@@ -132,6 +158,11 @@ describe("moveCompletedTasks with returnUnchecked", () => {
 	it("strips a template date from the start of an unchecked line", () => {
 		const r = run(["## A", "", "> [!done]- X", "> - [ ] [done:: 2026-10-01] p"], { ...back, dateTemplate: "[done:: {date}]" });
 		expect(r.text).toBe(["## A", "- [ ] p"].join("\n"));
+	});
+
+	it("returns an in-progress task and strips its date", () => {
+		const r = run(["## A", "", "> [!done]- X", "> - [/] p ✅ 2026-10-01"], back);
+		expect(r.text).toBe(["## A", "- [/] p"].join("\n"));
 	});
 
 	it("keeps a blank line between a returned task and the callout", () => {

@@ -42,6 +42,22 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName(s.settingClosedName)
+			.setDesc(s.settingClosedDesc)
+			.addText((text) =>
+				text
+					.setPlaceholder("xX-")
+					.setValue(this.plugin.settings.closedChars)
+					.onChange(async (value) => {
+						// Spaces are dropped: "- [ ]" is always an open task.
+						const chars = value.replace(/\s/g, "");
+						if (chars === "") return;
+						this.plugin.settings.closedChars = chars;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
 			.setName(s.settingDateName)
 			.setDesc(s.settingDateDesc)
 			.addToggle((toggle) =>

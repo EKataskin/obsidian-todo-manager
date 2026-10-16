@@ -2,8 +2,8 @@
 
 import { TaskBlock } from "./types";
 
-/** Matches a checkbox task line: indent, state char, rest of the text. */
-export const TASK_RE = /^(\s*)- \[([ xX])\] ?(.*)$/;
+/** Matches a checkbox task line: indent, status char, rest of the text. */
+export const TASK_RE = /^(\s*)- \[(.)\] ?(.*)$/;
 
 const HEADING_RE = /^#{1,6}\s+/;
 /** Any list item: "-", "*", "+" or "1." / "1)" followed by a space. */
@@ -17,7 +17,7 @@ export interface ParsedLine {
 	isTask: boolean;
 	/** Number of leading whitespace characters. */
 	indent: number;
-	/** Whether a task line's checkbox is checked. False for non-task lines. */
+	/** Whether a task line's status char is a closed one. False for non-task lines. */
 	checked: boolean;
 	/** Whether the line is a list item (task or plain bullet) outside code fences. */
 	isListItem: boolean;
@@ -56,8 +56,11 @@ export function fenceMask(lines: string[]): boolean[] {
 	});
 }
 
-/** Classifies every line; lines inside code fences are never tasks or list items. */
-export function parseLines(lines: string[]): ParsedLine[] {
+/**
+ * Classifies every line; lines inside code fences are never tasks or list items.
+ * `closedChars` lists the status chars of closed tasks, any other char is open.
+ */
+export function parseLines(lines: string[], closedChars = "xX"): ParsedLine[] {
 	const inFence = fenceMask(lines);
 	return lines.map((raw, i) => {
 		const m = inFence[i] ? null : raw.match(TASK_RE);
@@ -66,7 +69,7 @@ export function parseLines(lines: string[]): ParsedLine[] {
 				raw,
 				isTask: true,
 				indent: m[1].length,
-				checked: m[2] === "x" || m[2] === "X",
+				checked: closedChars.includes(m[2]),
 				isListItem: true,
 			};
 		}
