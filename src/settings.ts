@@ -1,11 +1,41 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type DoneMoverPlugin from "../main";
 import { calloutType } from "./taskParser";
+import { taskCharsFromCss } from "./taskChars";
 import { DatePosition } from "./types";
 
 /** Marks a field whose input is not saved; styled in styles.css. */
 function markInvalid(input: HTMLInputElement, invalid: boolean) {
 	input.setAttribute("aria-invalid", String(invalid));
+}
+
+/** Text of all stylesheets loaded in the app: core, theme and CSS snippets. */
+function loadedCss(): string {
+	let css = "";
+	for (const sheet of Array.from(document.styleSheets)) {
+		try {
+			for (const rule of Array.from(sheet.cssRules)) css += rule.cssText + "\n";
+		} catch {
+			// A stylesheet from another origin cannot be read.
+		}
+	}
+	return css;
+}
+
+/** A row of task checkboxes, the open one and one per char, drawn by the theme's styles. */
+function renderStatusPreview(el: HTMLElement, chars: string) {
+	el.empty();
+	for (const char of new Set(" " + chars.replace(/\s/g, ""))) {
+		const item = el.createSpan("todo-manager-status-item");
+		const box = item.createEl("input", {
+			type: "checkbox",
+			cls: "task-list-item-checkbox",
+			attr: { "data-task": char },
+		});
+		box.checked = char !== " ";
+		box.addEventListener("click", (e) => e.preventDefault());
+		item.createSpan({ text: char === " " ? "␣" : char });
+	}
 }
 
 export class DoneMoverSettingTab extends PluginSettingTab {
@@ -25,6 +55,8 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 		containerEl.empty();
 		containerEl.addClass("todo-manager-settings");
 		this.templateOnOpen = this.plugin.settings.dateTemplate;
+
+		new Setting(containerEl).setName(s.headingMove).setHeading();
 
 		new Setting(containerEl)
 			.setName(s.settingAutoModeName)
@@ -136,6 +168,30 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 					});
 				text.inputEl.rows = 4;
 			});
+
+		new Setting(containerEl).setName(s.headingStatusMenu).setHeading();
+
+		const menuChars = new Setting(containerEl).setName(s.settingMenuCharsName).setDesc(s.settingMenuCharsDesc);
+		const preview = menuChars.descEl.createDiv("todo-manager-status-preview");
+		menuChars
+			.addText((text) => {
+				text.setValue(this.plugin.settings.menuChars.replace(/\s/g, "")).onChange(async (value) => {
+					// Spaces are dropped: the open status is always offered anyway.
+					const chars = value.replace(/\s/g, "");
+					renderStatusPreview(preview, chars);
+					markInvalid(text.inputEl, chars === "");
+					if (chars === "") return;
+					this.plugin.settings.menuChars = chars;
+					await this.plugin.saveSettings();
+				});
+				menuChars.addButton((button) =>
+					button.setButtonText(s.buttonFromTheme).onClick(() => {
+						text.setValue(taskCharsFromCss(loadedCss(), this.plugin.settings.closedChars));
+						text.onChanged();
+					})
+				);
+			});
+		renderStatusPreview(preview, this.plugin.settings.menuChars);
 	}
 
 	// Done on close, not on every keystroke, so half-typed templates are not kept.

@@ -11,3 +11,18 @@
 	border-color: var(--text-error);
 	box-shadow: 0 0 0 1px var(--text-error);
 }
+
+/* Preview of the status chars under the setting's description. */
+.todo-manager-status-preview {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-4-1) var(--size-4-3);
+	margin-top: var(--size-4-2);
+}
+
+.todo-manager-status-item {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	font-family: var(--font-monospace);
+}

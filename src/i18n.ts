@@ -8,12 +8,17 @@ export interface Strings {
 	noticeMoved: (moved: number, returned: number) => string;
 	noticeAutoMoved: (count: number) => string;
 	noticeNoCompleted: string;
+	headingMove: string;
+	headingStatusMenu: string;
 	settingAutoModeName: string;
 	settingAutoModeDesc: string;
 	settingCalloutName: string;
 	settingCalloutDesc: string;
 	settingClosedName: string;
 	settingClosedDesc: string;
+	settingMenuCharsName: string;
+	settingMenuCharsDesc: string;
+	buttonFromTheme: string;
 	settingDateName: string;
 	settingDateDesc: string;
 	settingDatePositionName: string;
@@ -31,6 +36,8 @@ const en: Strings = {
 	noticeMoved: (moved, returned) => `Moved: ${moved}, returned: ${returned}.`,
 	noticeAutoMoved: (count) => `Automatically moved ${count} completed task(s).`,
 	noticeNoCompleted: "Nothing to move.",
+	headingMove: "Moving completed tasks",
+	headingStatusMenu: "Status menu",
 	settingAutoModeName: "Auto mode",
 	settingAutoModeDesc:
 		"Move fully completed tasks automatically as soon as they are checked " +
@@ -43,6 +50,11 @@ const en: Strings = {
 	settingClosedDesc:
 		'Characters in the brackets that mark a task as closed, e.g. "x" in "- [x]". ' +
 		"Closed tasks are moved to the done block, any other character means an open task.",
+	settingMenuCharsName: "Status characters",
+	settingMenuCharsDesc:
+		'Characters offered in the editor menu to set the task status, in this order. The open status is always offered first. ' +
+		'"From theme" puts the closed task characters first, then the characters styled by the current theme and CSS snippets.',
+	buttonFromTheme: "From theme",
 	settingDateName: "Append completion date",
 	settingDateDesc: "Adds the completion date to every moved, closed task line.",
 	settingDatePositionName: "Date position",
@@ -63,6 +75,8 @@ const de: Strings = {
 	noticeMoved: (moved, returned) => `Verschoben: ${moved}, zurückgeholt: ${returned}.`,
 	noticeAutoMoved: (count) => `${count} erledigte Aufgabe(n) automatisch verschoben.`,
 	noticeNoCompleted: "Nichts zu verschieben.",
+	headingMove: "Erledigte Aufgaben verschieben",
+	headingStatusMenu: "Statusmenü",
 	settingAutoModeName: "Auto-Modus",
 	settingAutoModeDesc:
 		"Vollständig erledigte Aufgaben automatisch verschieben, sobald sie " +
@@ -75,6 +89,11 @@ const de: Strings = {
 	settingClosedDesc:
 		'Zeichen in den Klammern, die eine Aufgabe als abgeschlossen markieren, z. B. "x" in "- [x]". ' +
 		"Abgeschlossene Aufgaben werden in den Erledigt-Block verschoben, jedes andere Zeichen bedeutet eine offene Aufgabe.",
+	settingMenuCharsName: "Statuszeichen",
+	settingMenuCharsDesc:
+		"Zeichen, die im Editor-Menü zum Setzen des Aufgabenstatus angeboten werden, in dieser Reihenfolge. Der offene Status wird immer als Erstes angeboten. " +
+		"„Aus dem Theme\" setzt die Zeichen für abgeschlossene Aufgaben an den Anfang, danach die Zeichen, die das aktuelle Theme und die CSS-Snippets gestalten.",
+	buttonFromTheme: "Aus dem Theme",
 	settingDateName: "Erledigt-Datum anhängen",
 	settingDateDesc: "Fügt jeder verschobenen, abgeschlossenen Aufgabe das Erledigt-Datum hinzu.",
 	settingDatePositionName: "Position des Datums",
@@ -95,6 +114,8 @@ const ru: Strings = {
 	noticeMoved: (moved, returned) => `Перенесено: ${moved}, возвращено: ${returned}.`,
 	noticeAutoMoved: (count) => `Автоматически перенесено выполненных задач: ${count}.`,
 	noticeNoCompleted: "Нечего переносить.",
+	headingMove: "Перенос выполненных задач",
+	headingStatusMenu: "Меню статуса",
 	settingAutoModeName: "Автоперенос",
 	settingAutoModeDesc:
 		"Переносить полностью выполненные задачи автоматически, как только они " +
@@ -107,6 +128,11 @@ const ru: Strings = {
 	settingClosedDesc:
 		"Символы в скобках, которые означают закрытую задачу, например «x» в «- [x]». " +
 		"Закрытые задачи переносятся в блок выполненных, любой другой символ означает открытую задачу.",
+	settingMenuCharsName: "Символы статуса",
+	settingMenuCharsDesc:
+		"Символы, которые меню редактора предлагает для статуса задачи, в этом порядке. Открытый статус предлагается всегда, первым. " +
+		"«Из темы» ставит первыми символы закрытых задач, за ними символы, для которых есть стили в текущей теме и CSS-сниппетах.",
+	buttonFromTheme: "Из темы",
 	settingDateName: "Добавлять дату выполнения",
 	settingDateDesc: "Добавляет дату выполнения к каждой перенесённой закрытой задаче.",
 	settingDatePositionName: "Положение даты",

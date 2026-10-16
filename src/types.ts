@@ -15,6 +15,8 @@ export interface DoneMoverSettings {
 	oldDateTemplates: string[];
 	/** Status chars of closed tasks ("x" in "- [x]"); any other char means open. */
 	closedChars: string;
+	/** Status chars offered in the editor menu, in this order, after the open status (" "). */
+	menuChars: string;
 	/** Vault paths (folders or files) in which auto mode stays inactive. */
 	excludedPaths: string[];
 }
@@ -27,6 +29,8 @@ export const DEFAULT_SETTINGS: DoneMoverSettings = {
 	dateTemplate: "<small>[{date}]</small>",
 	oldDateTemplates: [],
 	closedChars: "xX-",
+	// The closed chars, then the custom checkboxes of the AnuPpuccin theme.
+	menuChars: 'xX-><!/?*nliISpcb"udwkf',
 	excludedPaths: [],
 };
 
