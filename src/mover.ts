@@ -127,6 +127,21 @@ function processSection(
 	const moved: string[] = [];
 	for (const b of done) {
 		for (let i = b.start; i <= b.end; i++) removed.add(i);
+		// With a blank line (or the section start) above the block, the blank
+		// line below it goes too: none is left at the top of the list or doubled.
+		// The blank line before the callout stays.
+		let above = b.start - 1;
+		while (above >= 0 && removed.has(above)) above--;
+		const below = b.end + 1;
+		if (
+			(above < 0 || content[above].trim() === "") &&
+			content[below]?.trim() === "" &&
+			below + 1 < content.length &&
+			content[below + 1].trim() !== "" &&
+			below + 1 !== callout?.header
+		) {
+			removed.add(below);
+		}
 		let blockLines = dedent(content.slice(b.start, b.end + 1));
 		if (opts.appendDate) blockLines = addDateToBlock(blockLines, opts);
 		moved.push(...blockLines.map(quote));

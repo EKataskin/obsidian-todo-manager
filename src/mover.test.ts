@@ -96,6 +96,23 @@ describe("moveCompletedTasks", () => {
 		expect(r.text).toBe(["## A", "", "> [!done]- Выполнено", "> - [x] a", "", "## B"].join("\n"));
 	});
 
+	it("leaves no blank line at the top of a list with blank lines between tasks", () => {
+		const r = run(["## A", "- [x] a", "", "- [ ] b", "", "- [ ] c"]);
+		expect(r.text).toBe(["## A", "- [ ] b", "", "- [ ] c", "", "> [!done]- Выполнено", "> - [x] a"].join("\n"));
+	});
+
+	it("does not double blank lines when tasks between them move", () => {
+		const r = run(["## A", "- [ ] a", "", "- [x] b", "- [x] c", "", "- [ ] d"]);
+		expect(r.text).toBe(
+			["## A", "- [ ] a", "", "- [ ] d", "", "> [!done]- Выполнено", "> - [x] b", "> - [x] c"].join("\n")
+		);
+	});
+
+	it("keeps the blank line before an existing callout", () => {
+		const r = run(["## A", "- [x] a", "", "> [!done]- Выполнено", "> - [x] old"]);
+		expect(r.text).toBe(["## A", "", "> [!done]- Выполнено", "> - [x] a", "> - [x] old"].join("\n"));
+	});
+
 	it("does not start the file with a blank line", () => {
 		const r = run(["- [x] a", "## B"]);
 		expect(r.text).toBe(["> [!done]- Выполнено", "> - [x] a", "", "## B"].join("\n"));
