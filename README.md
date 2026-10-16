@@ -51,6 +51,34 @@ German or Russian when Obsidian is set to one of them.
 | Date template | Text of the date, `{date}` becomes `YYYY-MM-DD` | `<small>[{date}]</small>` |
 | Excluded folders/files | Vault paths (one per line) where auto mode stays inactive | empty |
 
+## Styling the completion date
+
+The plugin ships no styles for the date. With the default template
+(`<small>[{date}]</small>`) the date is already smaller, but Obsidian strikes
+it through together with the rest of a checked task. To change that, save a
+CSS snippet, e.g. `.obsidian/snippets/task-date.css`, and enable it under
+*Settings → Appearance → CSS snippets*:
+
+```css
+/* Completion date in task lines: no strike-through, muted color */
+.task-list-item small,
+.HyperMD-task-line small {
+	display: inline-block;
+	color: var(--text-faint);
+}
+```
+
+- The first selector covers Reading view, the second covers Live Preview.
+- It applies to task lines with any status character, so it does not depend
+  on which statuses your theme strikes through. On a line that is not struck
+  through, `display: inline-block` changes nothing visible.
+- `display: inline-block` removes the strike-through: a line decoration does
+  not carry over to inline-block elements, and `text-decoration: none` alone
+  cannot undo it.
+- Drop the `color` line if the default dimming of checked tasks is enough.
+- With another template, change `small` to whatever element the template
+  uses, e.g. `<span class="task-date">` and `.task-date`.
+
 ## Disclosures
 
 - The plugin works entirely offline and makes **no network requests**.
