@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, Notice, Plugin, TFile, moment } from "obsidian";
+import { Editor, MarkdownFileInfo, MarkdownView, Notice, Plugin, TFile, moment } from "obsidian";
 import { DEFAULT_SETTINGS, DoneMoverSettings, MoveOptions, MoveResult } from "./src/types";
 import { DoneMoverSettingTab } from "./src/settings";
 import { moveCompletedTasks } from "./src/mover";
@@ -75,8 +75,8 @@ export default class DoneMoverPlugin extends Plugin {
 		);
 
 		this.registerEvent(
-			this.app.workspace.on("editor-change", () => {
-				if (this.settings.autoMode) this.scheduleAutoMove();
+			this.app.workspace.on("editor-change", (editor, info) => {
+				if (this.settings.autoMode) this.scheduleAutoMove(editor, info);
 			})
 		);
 	}
@@ -147,14 +147,15 @@ export default class DoneMoverPlugin extends Plugin {
 		);
 	}
 
-	private scheduleAutoMove() {
+	/** Works on the edited note, even if another note is active when the timer fires. */
+	private scheduleAutoMove(editor: Editor, info: MarkdownView | MarkdownFileInfo) {
+		const file = info.file;
 		if (this.autoTimer !== null) window.clearTimeout(this.autoTimer);
 		this.autoTimer = window.setTimeout(() => {
 			this.autoTimer = null;
-			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-			if (!view) return;
-			if (isPathExcluded(view.file?.path ?? "", this.settings.excludedPaths)) return;
-			const editor = view.editor;
+			// The editor may show another note by now (navigation inside the same tab).
+			if (!file || info.file !== file) return;
+			if (isPathExcluded(file.path, this.settings.excludedPaths)) return;
 			const result = moveCompletedTasks(editor.getValue(), this.moveOptions(false));
 			if (result.movedCount > 0) {
 				this.applyResult(editor, result);
