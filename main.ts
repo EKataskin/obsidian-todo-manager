@@ -169,8 +169,15 @@ export default class DoneMoverPlugin extends Plugin {
 		for (const char of statusChars(this.settings.menuChars)) {
 			(submenu ?? menu).addItem((item) =>
 				item
-					.setTitle(createFragment((el) => createStatusIcon(el, char)))
-					.setChecked(current.size === 1 && current.has(char))
+					// "mod-columns" lays out the submenu in columns, "is-current" marks the
+					// current status with a background; see styles.css.
+					.setTitle(
+						createFragment((el) => {
+							const icon = createStatusIcon(el, char);
+							icon.toggleClass("mod-columns", !!submenu);
+							icon.toggleClass("is-current", current.size === 1 && current.has(char));
+						})
+					)
 					.onClick(() =>
 						// One transaction, so one undo step.
 						editor.transaction({

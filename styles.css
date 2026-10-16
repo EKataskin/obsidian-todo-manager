@@ -32,3 +32,17 @@
 	pointer-events: none;
 	margin: 0;
 }
+
+/* The status submenu in columns, filled row by row. The count can be changed
+   in a CSS snippet with --todo-manager-status-columns. */
+.menu:has(> .menu-item .todo-manager-status-item.mod-columns),
+.menu :has(> .menu-item .todo-manager-status-item.mod-columns) {
+	display: grid;
+	grid-template-columns: repeat(var(--todo-manager-status-columns, 4), auto);
+}
+
+/* The current status: a background instead of a check mark, which would
+   widen its column. */
+.menu-item:has(.todo-manager-status-item.is-current) {
+	background-color: var(--background-modifier-active-hover);
+}
