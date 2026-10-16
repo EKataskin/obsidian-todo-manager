@@ -2,6 +2,7 @@ import { Editor, MarkdownView, Notice, Plugin, moment } from "obsidian";
 import { DEFAULT_SETTINGS, DoneMoverSettings, MoveOptions, MoveResult } from "./src/types";
 import { DoneMoverSettingTab } from "./src/settings";
 import { moveCompletedTasks } from "./src/mover";
+import { calloutType } from "./src/taskParser";
 import { isPathExcluded } from "./src/exclusions";
 import { Lang, Strings, getStrings } from "./src/i18n";
 
@@ -74,7 +75,10 @@ export default class DoneMoverPlugin extends Plugin {
 
 	private moveOptions(returnUnchecked: boolean): MoveOptions {
 		return {
-			calloutHeader: this.settings.calloutHeader,
+			calloutHeader:
+				calloutType(this.settings.calloutHeader) !== null
+					? this.settings.calloutHeader
+					: DEFAULT_SETTINGS.calloutHeader,
 			appendDate: this.settings.appendCompletionDate,
 			returnUnchecked,
 			today: formatToday(),
@@ -85,8 +89,8 @@ export default class DoneMoverPlugin extends Plugin {
 		const result = moveCompletedTasks(editor.getValue(), this.moveOptions(true));
 		this.applyResult(editor, result);
 		new Notice(
-			result.movedCount > 0
-				? this.strings.noticeMoved(result.movedCount, this.settings.calloutHeader)
+			result.movedCount + result.returnedCount > 0
+				? this.strings.noticeMoved(result.movedCount, result.returnedCount)
 				: this.strings.noticeNoCompleted
 		);
 	}
@@ -109,7 +113,7 @@ export default class DoneMoverPlugin extends Plugin {
 
 	/** Writes the new text back and keeps the cursor at a sensible position. */
 	private applyResult(editor: Editor, result: MoveResult) {
-		if (result.movedCount === 0) return;
+		if (result.movedCount + result.returnedCount === 0) return;
 		const cursor = editor.getCursor();
 		editor.setValue(result.text);
 		const line = Math.min(cursor.line, editor.lastLine());

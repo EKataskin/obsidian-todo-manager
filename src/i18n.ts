@@ -5,15 +5,13 @@ export type Lang = "en" | "de" | "ru";
 
 export interface Strings {
 	cmdMoveCompleted: string;
-	cmdMoveSelection: string;
-	noticeMoved: (count: number, heading: string) => string;
+	noticeMoved: (moved: number, returned: number) => string;
 	noticeAutoMoved: (count: number) => string;
 	noticeNoCompleted: string;
-	noticeNoSelection: string;
 	settingAutoModeName: string;
 	settingAutoModeDesc: string;
-	settingHeadingName: string;
-	settingHeadingDesc: string;
+	settingCalloutName: string;
+	settingCalloutDesc: string;
 	settingDateName: string;
 	settingDateDesc: string;
 	settingExcludedName: string;
@@ -21,19 +19,18 @@ export interface Strings {
 }
 
 const en: Strings = {
-	cmdMoveCompleted: "Move completed tasks to Done",
-	cmdMoveSelection: "Move selection to Done",
-	noticeMoved: (count, heading) => `Moved ${count} task(s) to "${heading}".`,
+	cmdMoveCompleted: "Move completed tasks",
+	noticeMoved: (moved, returned) => `Moved: ${moved}, returned: ${returned}.`,
 	noticeAutoMoved: (count) => `Automatically moved ${count} completed task(s).`,
-	noticeNoCompleted: "No fully completed tasks found.",
-	noticeNoSelection: "No tasks found in the selection.",
+	noticeNoCompleted: "Nothing to move.",
 	settingAutoModeName: "Auto mode",
 	settingAutoModeDesc:
 		"Move fully completed tasks automatically as soon as they are checked " +
 		"(only when all of their sub-tasks are checked too).",
-	settingHeadingName: "Done heading",
-	settingHeadingDesc:
-		"Name of the target heading that completed tasks are moved under.",
+	settingCalloutName: "Done block header",
+	settingCalloutDesc:
+		'First line of the callout that holds completed tasks, e.g. "> [!done]- Done". ' +
+		"Existing blocks are found by callout type.",
 	settingDateName: "Append completion date",
 	settingDateDesc: 'Appends "✅ YYYY-MM-DD" to every moved, checked line.',
 	settingExcludedName: "Excluded folders/files",
@@ -43,19 +40,18 @@ const en: Strings = {
 };
 
 const de: Strings = {
-	cmdMoveCompleted: "Erledigte Aufgaben nach Done verschieben",
-	cmdMoveSelection: "Auswahl nach Done verschieben",
-	noticeMoved: (count, heading) => `${count} Aufgabe(n) nach „${heading}" verschoben.`,
+	cmdMoveCompleted: "Erledigte Aufgaben verschieben",
+	noticeMoved: (moved, returned) => `Verschoben: ${moved}, zurückgeholt: ${returned}.`,
 	noticeAutoMoved: (count) => `${count} erledigte Aufgabe(n) automatisch verschoben.`,
-	noticeNoCompleted: "Keine vollständig erledigten Aufgaben gefunden.",
-	noticeNoSelection: "Keine Aufgaben in der Auswahl gefunden.",
+	noticeNoCompleted: "Nichts zu verschieben.",
 	settingAutoModeName: "Auto-Modus",
 	settingAutoModeDesc:
 		"Vollständig erledigte Aufgaben automatisch verschieben, sobald sie " +
 		"abgehakt werden (nur wenn auch alle Unteraufgaben abgehakt sind).",
-	settingHeadingName: "Done-Überschrift",
-	settingHeadingDesc:
-		"Name der Ziel-Überschrift, unter die erledigte Aufgaben verschoben werden.",
+	settingCalloutName: "Kopfzeile des Erledigt-Blocks",
+	settingCalloutDesc:
+		"Erste Zeile des Callouts für erledigte Aufgaben, z. B. „> [!done]- Erledigt\". " +
+		"Vorhandene Blöcke werden am Callout-Typ erkannt.",
 	settingDateName: "Erledigt-Datum anhängen",
 	settingDateDesc: 'Hängt "✅ JJJJ-MM-TT" an jede verschobene, abgehakte Zeile an.',
 	settingExcludedName: "Ausgeschlossene Ordner/Dateien",
@@ -65,19 +61,18 @@ const de: Strings = {
 };
 
 const ru: Strings = {
-	cmdMoveCompleted: "Перенести выполненные задачи в Done",
-	cmdMoveSelection: "Перенести выделенное в Done",
-	noticeMoved: (count, heading) => `Перенесено задач в «${heading}»: ${count}.`,
+	cmdMoveCompleted: "Перенести выполненные задачи",
+	noticeMoved: (moved, returned) => `Перенесено: ${moved}, возвращено: ${returned}.`,
 	noticeAutoMoved: (count) => `Автоматически перенесено выполненных задач: ${count}.`,
-	noticeNoCompleted: "Полностью выполненных задач не найдено.",
-	noticeNoSelection: "В выделении нет задач.",
+	noticeNoCompleted: "Нечего переносить.",
 	settingAutoModeName: "Автоперенос",
 	settingAutoModeDesc:
 		"Переносить полностью выполненные задачи автоматически, как только они " +
 		"отмечены (только если отмечены и все подзадачи).",
-	settingHeadingName: "Заголовок Done",
-	settingHeadingDesc:
-		"Название заголовка, под который переносятся выполненные задачи.",
+	settingCalloutName: "Заголовок блока выполненных",
+	settingCalloutDesc:
+		"Первая строка callout для выполненных задач, например «> [!done]- Выполнено». " +
+		"Существующий блок находится по типу callout.",
 	settingDateName: "Добавлять дату выполнения",
 	settingDateDesc: "Дописывает «✅ ГГГГ-ММ-ДД» к каждой перенесённой отмеченной строке.",
 	settingExcludedName: "Исключённые папки и файлы",

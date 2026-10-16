@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type DoneMoverPlugin from "../main";
+import { calloutType } from "./taskParser";
 
 export class DoneMoverSettingTab extends PluginSettingTab {
 	plugin: DoneMoverPlugin;
@@ -25,14 +26,16 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName(s.settingHeadingName)
-			.setDesc(s.settingHeadingDesc)
+			.setName(s.settingCalloutName)
+			.setDesc(s.settingCalloutDesc)
 			.addText((text) =>
 				text
 					.setPlaceholder("> [!done]- Done")
 					.setValue(this.plugin.settings.calloutHeader)
 					.onChange(async (value) => {
-						this.plugin.settings.calloutHeader = value.trim() || "> [!done]- Done";
+						// Only a valid callout header is saved; partial input is ignored.
+						if (calloutType(value.trim()) === null) return;
+						this.plugin.settings.calloutHeader = value.trim();
 						await this.plugin.saveSettings();
 					})
 			);
