@@ -111,6 +111,11 @@ describe("moveCompletedTasks with returnUnchecked", () => {
 		expect(r.text).toBe(["## A", "- [ ] p", "\t- [x] c ✅ 2026-10-01"].join("\n"));
 	});
 
+	it("keeps a blank line between a returned task and the callout", () => {
+		const r = run(["## A", "> [!done]- X", "> - [ ] back", "> - [x] stay"], back);
+		expect(r.text).toBe(["## A", "- [ ] back", "", "> [!done]- X", "> - [x] stay"].join("\n"));
+	});
+
 	it("leaves a plain bullet in the callout alone", () => {
 		const text = ["## A", "", "> [!done]- X", "> - note", "> - [x] d"];
 		expect(run(text, back)).toEqual({ text: text.join("\n"), movedCount: 0, returnedCount: 0 });

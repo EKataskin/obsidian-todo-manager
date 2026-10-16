@@ -151,6 +151,10 @@ function processSection(
 
 	const out: string[] = anchor === -1 ? [...returnedLines] : [];
 	content.forEach((line, i) => {
+		// A kept callout always has a blank line before it.
+		if (i === callout.header && bodyLeft && out.length > 0 && out[out.length - 1].trim() !== "") {
+			out.push("");
+		}
 		if (!removed.has(i)) out.push(line);
 		if (i === callout.header && bodyLeft) out.push(...moved);
 		if (i === anchor) out.push(...returnedLines);
