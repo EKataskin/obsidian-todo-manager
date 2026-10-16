@@ -64,7 +64,8 @@ CSS snippet, e.g. `.obsidian/snippets/task-date.css`, and enable it under
 .task-list-item small,
 .HyperMD-task-line small {
 	display: inline-block;
-	color: var(--text-faint);
+	margin: 0 0.5em;
+	color: var(--text-muted);
 }
 ```
 
@@ -75,6 +76,9 @@ CSS snippet, e.g. `.obsidian/snippets/task-date.css`, and enable it under
 - `display: inline-block` removes the strike-through: a line decoration does
   not carry over to inline-block elements, and `text-decoration: none` alone
   cannot undo it.
+- `margin` adds a gap on both sides, because CSS cannot tell whether the date
+  stands at the start or at the end of the line. The unneeded side lands next
+  to the checkbox or after the end of the line, where it is barely visible.
 - Drop the `color` line if the default dimming of checked tasks is enough.
 - With another template, change `small` to whatever element the template
   uses, e.g. `<span class="task-date">` and `.task-date`.
