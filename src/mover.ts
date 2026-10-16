@@ -11,6 +11,7 @@ import {
 	splitLines,
 	splitSections,
 	topLevelBlocks,
+	unquote,
 } from "./taskParser";
 
 /** Detects an already-present "✅ YYYY-MM-DD" completion date. */
@@ -57,10 +58,20 @@ interface SectionResult {
 	returned: number;
 }
 
+/** Removes the "✅ YYYY-MM-DD" completion date from unchecked task lines. */
+function stripDateFromUnchecked(blockLines: string[]): string[] {
+	return blockLines.map((line) => {
+		const m = line.match(TASK_RE);
+		if (!m || m[2] !== " ") return line;
+		return line.replace(/\s*✅\s*\d{4}-\d{2}-\d{2}/, "");
+	});
+}
+
 /**
- * Moves the fully completed top-level tasks of one section into the
- * section's callout. Returns null when the section stays unchanged.
- * `hasNextLine` tells whether a heading follows the section.
+ * Processes one section: fully completed top-level tasks go to the top of the
+ * section's callout; with `returnUnchecked`, callout blocks that have an
+ * unchecked line go back to the end of the list. Returns null when the
+ * section stays unchanged. `hasNextLine` tells whether a heading follows.
  */
 function processSection(
 	content: string[],
@@ -69,10 +80,26 @@ function processSection(
 	opts: MoveOptions
 ): SectionResult | null {
 	const parsed = parseLines(content);
-	const done = topLevelBlocks(content, parsed).filter((b) => isBlockFullyDone(parsed, b));
-	if (done.length === 0) return null;
+	const blocks = topLevelBlocks(content, parsed);
+	const done = blocks.filter((b) => isBlockFullyDone(parsed, b));
+	const callout = findCallout(content, { contentStart: 0, contentEnd: content.length }, type);
 
 	const removed = new Set<number>();
+	const returnedLines: string[] = [];
+	let returned = 0;
+	if (opts.returnUnchecked && callout) {
+		const bodyStart = callout.header + 1;
+		const inner = content.slice(bodyStart, callout.end + 1).map(unquote);
+		const innerParsed = parseLines(inner);
+		for (const b of topLevelBlocks(inner, innerParsed)) {
+			if (isBlockFullyDone(innerParsed, b)) continue;
+			for (let i = b.start; i <= b.end; i++) removed.add(bodyStart + i);
+			returnedLines.push(...stripDateFromUnchecked(dedent(inner.slice(b.start, b.end + 1))));
+			returned++;
+		}
+	}
+	if (done.length === 0 && returned === 0) return null;
+
 	const moved: string[] = [];
 	for (const b of done) {
 		for (let i = b.start; i <= b.end; i++) removed.add(i);
@@ -81,23 +108,45 @@ function processSection(
 		moved.push(...blockLines.map(quote));
 	}
 
-	const callout = findCallout(content, { contentStart: 0, contentEnd: content.length }, type);
-	let out: string[] = [];
-	if (callout) {
-		content.forEach((line, i) => {
-			if (removed.has(i)) return;
-			out.push(line);
-			if (i === callout.header) out.push(...moved);
-		});
-	} else {
+	if (!callout) {
 		const kept = content.filter((_, i) => !removed.has(i));
 		const at = lastNonBlank(kept) + 1;
 		const block = ["", opts.calloutHeader, ...moved];
 		const nextIsText = at < kept.length ? kept[at].trim() !== "" : hasNextLine;
 		if (nextIsText) block.push("");
-		out = [...kept.slice(0, at), ...block, ...kept.slice(at)];
+		return { content: [...kept.slice(0, at), ...block, ...kept.slice(at)], moved: done.length, returned };
 	}
-	return { content: out, moved: done.length, returned: 0 };
+
+	// An emptied callout goes away together with the blank line before it.
+	let bodyLeft = moved.length > 0;
+	for (let i = callout.header + 1; i <= callout.end; i++) {
+		if (!removed.has(i) && unquote(content[i]).trim() !== "") bodyLeft = true;
+	}
+	if (!bodyLeft) {
+		for (let i = callout.header; i <= callout.end; i++) removed.add(i);
+		if (callout.header > 0 && content[callout.header - 1].trim() === "") removed.add(callout.header - 1);
+	}
+
+	// Returned tasks go after the last open task block, else after the last
+	// text line before the callout, else to the top of the section.
+	const open = blocks.filter((b) => !isBlockFullyDone(parsed, b));
+	let anchor = open.length > 0 ? open[open.length - 1].end : -1;
+	if (anchor === -1) {
+		for (let i = callout.header - 1; i >= 0; i--) {
+			if (!removed.has(i) && content[i].trim() !== "") {
+				anchor = i;
+				break;
+			}
+		}
+	}
+
+	const out: string[] = anchor === -1 ? [...returnedLines] : [];
+	content.forEach((line, i) => {
+		if (!removed.has(i)) out.push(line);
+		if (i === callout.header && bodyLeft) out.push(...moved);
+		if (i === anchor) out.push(...returnedLines);
+	});
+	return { content: out, moved: done.length, returned };
 }
 
 /**

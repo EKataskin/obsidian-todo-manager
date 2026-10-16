@@ -75,3 +75,29 @@ describe("moveCompletedTasks", () => {
 		expect(r.text).toBe("## A\r\n\r\n> [!done]- Выполнено\r\n> - [x] a\r\n");
 	});
 });
+
+describe("moveCompletedTasks with returnUnchecked", () => {
+	const back = { returnUnchecked: true };
+
+	it("returns an unchecked task to the end of the list", () => {
+		const r = run(["## A", "- [ ] a", "", "> [!done]- X", "> - [ ] back", "> - [x] stay"], back);
+		expect(r.returnedCount).toBe(1);
+		expect(r.text).toBe(["## A", "- [ ] a", "- [ ] back", "", "> [!done]- X", "> - [x] stay"].join("\n"));
+	});
+
+	it("returns the whole block when only a sub-task was unchecked", () => {
+		const r = run(["## A", "", "> [!done]- X", "> - [x] p", "> \t- [ ] c"], back);
+		expect(r.text).toBe(["## A", "- [x] p", "\t- [ ] c"].join("\n"));
+	});
+
+	it("strips the date only from unchecked lines", () => {
+		const r = run(["## A", "", "> [!done]- X", "> - [ ] p ✅ 2026-10-01", "> \t- [x] c ✅ 2026-10-01"], back);
+		expect(r.text).toBe(["## A", "- [ ] p", "\t- [x] c ✅ 2026-10-01"].join("\n"));
+	});
+
+	it("moves and returns in one run", () => {
+		const r = run(["## A", "- [x] new", "", "> [!done]- X", "> - [ ] back"], back);
+		expect(r).toMatchObject({ movedCount: 1, returnedCount: 1 });
+		expect(r.text).toBe(["## A", "- [ ] back", "", "> [!done]- X", "> - [x] new"].join("\n"));
+	});
+});
