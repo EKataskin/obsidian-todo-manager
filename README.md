@@ -53,6 +53,19 @@ German or Russian when Obsidian is set to one of them.
   as the settings window closes. Such dates are not added twice and are
   removed on moving back.
 
+## Status menu
+
+- *Task status* in the editor's right-click menu sets the character in the
+  brackets of the task in the cursor's line, or of every task in the
+  selection, also inside a callout. It is shown only when there is a task
+  to change.
+- The submenu offers the open status (`- [ ]`) first, then the characters
+  of the *Status characters* setting, each drawn with the theme's checkbox
+  style. The current status is marked.
+- *From theme* next to the setting fills it with the closed task
+  characters, then every character the theme and CSS snippets draw as a
+  checked checkbox. The field can then be edited.
+
 ## Settings
 
 | Setting | Description | Default |
@@ -64,6 +77,7 @@ German or Russian when Obsidian is set to one of them.
 | Date position | At the start (after the checkbox) or at the end of the line | end |
 | Date template | Text of the date, `{date}` becomes `YYYY-MM-DD` | `<small>[{date}]</small>` |
 | Excluded folders/files | Vault paths (one per line) where auto mode stays inactive | empty |
+| Status characters | Characters offered in the *Task status* menu after the open status | `xX-><!/?*nliISpcb"udwkf` (AnuPpuccin) |
 
 ## Styling the completion date
 
@@ -124,16 +138,18 @@ Copy `main.js`, `manifest.json` and `styles.css` into
 
 | File | Purpose |
 |------|---------|
-| `main.ts` | Plugin class: command, context menu, auto mode |
+| `main.ts` | Plugin class: command, context menus, auto mode |
 | `src/taskParser.ts` | Markdown parsing: sections, task blocks, callouts |
 | `src/mover.ts` | Pure move logic (`moveCompletedTasks`) |
 | `src/settings.ts` | Settings UI |
+| `src/taskChars.ts` | Status chars: reading them from CSS, changing them in a line |
+| `src/statusIcon.ts` | Checkbox icon of a status, for the menu and the settings |
 | `src/exclusions.ts` | Path-exclusion matching for auto mode |
 | `src/i18n.ts` | UI strings (English / German / Russian) |
 | `src/types.ts` | Shared types and defaults |
 | `src/*.test.ts` | Unit tests |
 
-`taskParser.ts`, `mover.ts` and `exclusions.ts` have no Obsidian dependencies,
+`taskParser.ts`, `mover.ts`, `taskChars.ts` and `exclusions.ts` have no Obsidian dependencies,
 so they are unit-testable without a running Obsidian instance.
 
 ## License

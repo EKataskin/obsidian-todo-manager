@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { taskCharsFromCss } from "./taskChars";
+import { setTaskStatus, taskCharsFromCss, taskStatus } from "./taskChars";
 
 describe("taskCharsFromCss", () => {
 	it("starts with the given chars even without styles", () => {
@@ -34,5 +34,40 @@ describe("taskCharsFromCss", () => {
 
 	it("skips values longer than one char", () => {
 		expect(taskCharsFromCss('[data-task="ab"]:checked {} [data-task=""]:checked {}', "x")).toBe("x");
+	});
+});
+
+describe("setTaskStatus", () => {
+	it("replaces the char in the brackets", () => {
+		expect(setTaskStatus("- [ ] a", "x")).toBe("- [x] a");
+		expect(setTaskStatus("	* [x] a", " ")).toBe("	* [ ] a");
+		expect(setTaskStatus("1) [/] a", "!")).toBe("1) [!] a");
+		expect(setTaskStatus("- [x]", "?")).toBe("- [?]");
+	});
+
+	it("works inside a callout", () => {
+		expect(setTaskStatus("> - [x] a", " ")).toBe("> - [ ] a");
+		expect(setTaskStatus(">> 	- [x] a", "-")).toBe(">> 	- [-] a");
+	});
+
+	it("takes the char literally", () => {
+		expect(setTaskStatus("- [ ] a", "$")).toBe("- [$] a");
+	});
+
+	it("returns null for a line that is not a task", () => {
+		expect(setTaskStatus("text", "x")).toBeNull();
+		expect(setTaskStatus("- [a](url)", "x")).toBeNull();
+		expect(setTaskStatus("- a", "x")).toBeNull();
+	});
+});
+
+describe("taskStatus", () => {
+	it("returns the char in the brackets", () => {
+		expect(taskStatus("- [ ] a")).toBe(" ");
+		expect(taskStatus("> 	1. [!] a")).toBe("!");
+	});
+
+	it("returns null for a line that is not a task", () => {
+		expect(taskStatus("- [a](url)")).toBeNull();
 	});
 });

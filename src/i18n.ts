@@ -5,6 +5,7 @@ export type Lang = "en" | "de" | "ru";
 
 export interface Strings {
 	cmdMoveCompleted: string;
+	menuTaskStatus: string;
 	noticeMoved: (moved: number, returned: number) => string;
 	noticeAutoMoved: (count: number) => string;
 	noticeNoCompleted: string;
@@ -33,6 +34,7 @@ export interface Strings {
 
 const en: Strings = {
 	cmdMoveCompleted: "Move completed tasks",
+	menuTaskStatus: "Task status",
 	noticeMoved: (moved, returned) => `Moved: ${moved}, returned: ${returned}.`,
 	noticeAutoMoved: (count) => `Automatically moved ${count} completed task(s).`,
 	noticeNoCompleted: "Nothing to move.",
@@ -72,6 +74,7 @@ const en: Strings = {
 
 const de: Strings = {
 	cmdMoveCompleted: "Erledigte Aufgaben verschieben",
+	menuTaskStatus: "Aufgabenstatus",
 	noticeMoved: (moved, returned) => `Verschoben: ${moved}, zurückgeholt: ${returned}.`,
 	noticeAutoMoved: (count) => `${count} erledigte Aufgabe(n) automatisch verschoben.`,
 	noticeNoCompleted: "Nichts zu verschieben.",
@@ -111,6 +114,7 @@ const de: Strings = {
 
 const ru: Strings = {
 	cmdMoveCompleted: "Перенести выполненные задачи",
+	menuTaskStatus: "Статус задачи",
 	noticeMoved: (moved, returned) => `Перенесено: ${moved}, возвращено: ${returned}.`,
 	noticeAutoMoved: (count) => `Автоматически перенесено выполненных задач: ${count}.`,
 	noticeNoCompleted: "Нечего переносить.",

@@ -24,3 +24,18 @@ export function taskCharsFromCss(css: string, first: string): string {
 	}
 	return [...chars].join("");
 }
+
+/** A task line, also inside a callout: prefix up to "[", the status char, then "]". */
+const STATUS_RE = /^((?:\s*>)*\s*(?:[-*+]|\d+[.)]) \[).(?=\](?:\s|$))/;
+
+/** The status char of a task line, or null when the line is not a task. */
+export function taskStatus(line: string): string | null {
+	const m = line.match(STATUS_RE);
+	return m ? m[0].slice(m[1].length) : null;
+}
+
+/** The line with `char` as the task status, or null when the line is not a task. */
+export function setTaskStatus(line: string, char: string): string | null {
+	if (!STATUS_RE.test(line)) return null;
+	return line.replace(STATUS_RE, (_, prefix: string) => prefix + char);
+}

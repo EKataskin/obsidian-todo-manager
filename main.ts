@@ -1,9 +1,11 @@
-import { Editor, MarkdownFileInfo, MarkdownView, Notice, Plugin, TFile, moment } from "obsidian";
+import { Editor, MarkdownFileInfo, MarkdownView, Menu, MenuItem, Notice, Plugin, TFile, moment } from "obsidian";
 import { DEFAULT_SETTINGS, DoneMoverSettings, MoveOptions, MoveResult } from "./src/types";
 import { DoneMoverSettingTab } from "./src/settings";
 import { changedRange, moveCompletedTasks } from "./src/mover";
 import { calloutType } from "./src/taskParser";
 import { isPathExcluded } from "./src/exclusions";
+import { setTaskStatus, taskStatus } from "./src/taskChars";
+import { createStatusIcon, statusChars } from "./src/statusIcon";
 import { Lang, Strings, getStrings } from "./src/i18n";
 
 /** Delay before the auto mode reacts, so it does not interrupt typing. */
@@ -57,6 +59,7 @@ export default class DoneMoverPlugin extends Plugin {
 						.setIcon("check-check")
 						.onClick(() => this.runMoveCompleted(editor))
 				);
+				this.addStatusMenu(menu, editor);
 			})
 		);
 
@@ -139,6 +142,50 @@ export default class DoneMoverPlugin extends Plugin {
 			}
 		}
 		return null;
+	}
+
+	/** "Task status" with one item per status char, for the tasks in the cursor's line or the selection. */
+	private addStatusMenu(menu: Menu, editor: Editor) {
+		const from = editor.getCursor("from");
+		const to = editor.getCursor("to");
+		// A selection that ends at the start of a line does not take that line.
+		const last = to.line > from.line && to.ch === 0 ? to.line - 1 : to.line;
+		const lines: number[] = [];
+		const current = new Set<string>();
+		for (let i = from.line; i <= last; i++) {
+			const status = taskStatus(editor.getLine(i));
+			if (status === null) continue;
+			lines.push(i);
+			current.add(status);
+		}
+		if (lines.length === 0) return;
+
+		let submenu: Menu | undefined;
+		menu.addItem((item) => {
+			item.setTitle(this.strings.menuTaskStatus).setIcon("square-check");
+			// Submenus are not in the public API; without them the items go right into the menu.
+			submenu = (item as MenuItem & { setSubmenu?: () => Menu }).setSubmenu?.();
+		});
+		for (const char of statusChars(this.settings.menuChars)) {
+			(submenu ?? menu).addItem((item) =>
+				item
+					.setTitle(createFragment((el) => createStatusIcon(el, char)))
+					.setChecked(current.size === 1 && current.has(char))
+					.onClick(() =>
+						// One transaction, so one undo step.
+						editor.transaction({
+							changes: lines.map((line) => {
+								const text = editor.getLine(line);
+								return {
+									from: { line, ch: 0 },
+									to: { line, ch: text.length },
+									text: setTaskStatus(text, char) ?? text,
+								};
+							}),
+						})
+					)
+			);
+		}
 	}
 
 	private showResult(result: MoveResult) {

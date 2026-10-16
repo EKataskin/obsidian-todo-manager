@@ -2,6 +2,7 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import type DoneMoverPlugin from "../main";
 import { calloutType } from "./taskParser";
 import { taskCharsFromCss } from "./taskChars";
+import { createStatusIcon, statusChars } from "./statusIcon";
 import { DatePosition } from "./types";
 
 /** Marks a field whose input is not saved; styled in styles.css. */
@@ -25,17 +26,7 @@ function loadedCss(): string {
 /** A row of task checkboxes, the open one and one per char, drawn by the theme's styles. */
 function renderStatusPreview(el: HTMLElement, chars: string) {
 	el.empty();
-	for (const char of new Set(" " + chars.replace(/\s/g, ""))) {
-		const item = el.createSpan("todo-manager-status-item");
-		const box = item.createEl("input", {
-			type: "checkbox",
-			cls: "task-list-item-checkbox",
-			attr: { "data-task": char },
-		});
-		box.checked = char !== " ";
-		box.addEventListener("click", (e) => e.preventDefault());
-		item.createSpan({ text: char === " " ? "␣" : char });
-	}
+	for (const char of statusChars(chars)) createStatusIcon(el, char);
 }
 
 export class DoneMoverSettingTab extends PluginSettingTab {

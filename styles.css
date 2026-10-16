@@ -26,3 +26,9 @@
 	gap: var(--size-2-2);
 	font-family: var(--font-monospace);
 }
+
+/* The checkbox only shows the status: clicks go to the menu item. */
+.todo-manager-status-item input {
+	pointer-events: none;
+	margin: 0;
+}
