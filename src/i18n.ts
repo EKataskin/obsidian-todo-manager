@@ -21,6 +21,8 @@ export interface Strings {
 	settingCompleteTemplatesDesc: string;
 	buttonAddTemplate: string;
 	buttonDeleteTemplate: string;
+	buttonMoveUp: string;
+	buttonMoveDown: string;
 	settingTemplateNameName: string;
 	settingTemplateCharName: string;
 	settingTemplateCharDesc: string;
@@ -69,6 +71,8 @@ const en: Strings = {
 		'"Done" always comes first: it puts "x", adds the date by the first date template when "Append completion date" is on, and moves the task.',
 	buttonAddTemplate: "Add template",
 	buttonDeleteTemplate: "Delete template",
+	buttonMoveUp: "Move up",
+	buttonMoveDown: "Move down",
 	settingTemplateNameName: "Name",
 	settingTemplateCharName: "Status character",
 	settingTemplateCharDesc: 'What goes into the brackets, e.g. "x".',
@@ -130,6 +134,8 @@ const de: Strings = {
 		"„Erledigt\" steht immer an erster Stelle: setzt \"x\", fügt das Datum nach der ersten Datumsvorlage hinzu, wenn „Erledigt-Datum anhängen\" an ist, und verschiebt die Aufgabe.",
 	buttonAddTemplate: "Vorlage hinzufügen",
 	buttonDeleteTemplate: "Vorlage löschen",
+	buttonMoveUp: "Nach oben",
+	buttonMoveDown: "Nach unten",
 	settingTemplateNameName: "Name",
 	settingTemplateCharName: "Statuszeichen",
 	settingTemplateCharDesc: 'Was in die Klammern kommt, z. B. "x".',
@@ -191,6 +197,8 @@ const ru: Strings = {
 		"«Выполнено» всегда идёт первым: ставит «x», добавляет дату по первому шаблону даты, если включено «Добавлять дату выполнения», и переносит задачу.",
 	buttonAddTemplate: "Добавить шаблон",
 	buttonDeleteTemplate: "Удалить шаблон",
+	buttonMoveUp: "Выше",
+	buttonMoveDown: "Ниже",
 	settingTemplateNameName: "Наименование",
 	settingTemplateCharName: "Символ выполнения",
 	settingTemplateCharDesc: "Что ставить в скобки, например «x».",

@@ -107,7 +107,8 @@ German or Russian when Obsidian is set to one of them.
   position* says, and moves the task.
 - Your own templates follow, from *Complete templates* in the settings.
   Each has a name, a status character, a date template (empty means no
-  date), a date position and *Move to the done block*.
+  date), a date position and *Move to the done block*. The arrows next
+  to the name change the order of the templates in the menu.
 - The date is always added, even when the task has a date already.
 - Only the changed tasks move, with their sub-tasks and whatever their
   status character. A changed sub-task moves its top-level task only when

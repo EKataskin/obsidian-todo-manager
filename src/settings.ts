@@ -195,6 +195,18 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 		for (const template of this.plugin.settings.completeTemplates) this.renderCompleteTemplate(containerEl, template);
 	}
 
+	/** Moves the template one place up (-1) or down (1) in the list and in the menu. */
+	private async moveCompleteTemplate(template: CompleteTemplate, step: -1 | 1) {
+		const list = [...this.plugin.settings.completeTemplates];
+		const i = list.indexOf(template);
+		const j = i + step;
+		if (i < 0 || j < 0 || j >= list.length) return;
+		[list[i], list[j]] = [list[j], list[i]];
+		this.plugin.settings.completeTemplates = list;
+		await this.plugin.saveSettings();
+		this.display();
+	}
+
 	/** The fields of one complete template in a frame. Invalid input is not saved. */
 	private renderCompleteTemplate(parent: HTMLElement, template: CompleteTemplate) {
 		const s = this.plugin.strings;
@@ -212,6 +224,20 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				});
 			})
+			.addExtraButton((button) =>
+				button
+					.setIcon("arrow-up")
+					.setTooltip(s.buttonMoveUp)
+					.setDisabled(this.plugin.settings.completeTemplates[0] === template)
+					.onClick(() => this.moveCompleteTemplate(template, -1))
+			)
+			.addExtraButton((button) =>
+				button
+					.setIcon("arrow-down")
+					.setTooltip(s.buttonMoveDown)
+					.setDisabled(this.plugin.settings.completeTemplates.at(-1) === template)
+					.onClick(() => this.moveCompleteTemplate(template, 1))
+			)
 			.addExtraButton((button) =>
 				button
 					.setIcon("trash-2")
