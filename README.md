@@ -72,28 +72,6 @@ German or Russian when Obsidian is set to one of them.
   template. It is shown only when
   one of the tasks has such a date.
 
-## Complete by template
-
-- *Complete by template* in the editor's right-click menu does three things
-  in one step to the task in the cursor's line, or to every task in the
-  selection: sets the status character, adds a date and moves the task to
-  the done block. One undo reverts all of it.
-- *Done* always comes first. It is made of the general settings: it puts
-  `x` (as a click in Reading view does), adds the date by the first date
-  template when *Append completion date* is on, puts it where *Date
-  position* says, and moves the task.
-- Your own templates follow, from *Complete templates* in the settings.
-  Each has a name, a status character, a date template (empty means no
-  date), a date position and *Move to the done block*.
-- The date is always added, even when the task has a date already.
-- Only the changed tasks move, with their sub-tasks and whatever their
-  status character. A changed sub-task moves its top-level task only when
-  that task is fully closed. Other tasks of the note stay where they are,
-  and nothing comes back from the done block.
-- A moved task with an open status character, e.g. `/`, goes back to the
-  list on the next *Move completed tasks*, as any open task in the done
-  block does.
-
 ## Status menu
 
 - *Task status* in the editor's right-click menu sets the character in the
@@ -117,6 +95,28 @@ German or Russian when Obsidian is set to one of them.
 - The look does not decide what moves: a task is closed only when its
   character is listed in *Closed task characters*.
 
+## Complete by template
+
+- *Complete by template* in the editor's right-click menu does three things
+  in one step to the task in the cursor's line, or to every task in the
+  selection: sets the status character, adds a date and moves the task to
+  the done block. One undo reverts all of it.
+- *Done* always comes first. It is made of the general settings: it puts
+  `x` (as a click in Reading view does), adds the date by the first date
+  template when *Append completion date* is on, puts it where *Date
+  position* says, and moves the task.
+- Your own templates follow, from *Complete templates* in the settings.
+  Each has a name, a status character, a date template (empty means no
+  date), a date position and *Move to the done block*.
+- The date is always added, even when the task has a date already.
+- Only the changed tasks move, with their sub-tasks and whatever their
+  status character. A changed sub-task moves its top-level task only when
+  that task is fully closed. Other tasks of the note stay where they are,
+  and nothing comes back from the done block.
+- A moved task with an open status character, e.g. `/`, goes back to the
+  list on the next *Move completed tasks*, as any open task in the done
+  block does.
+
 ## Settings
 
 | Setting | Description | Default |
@@ -128,8 +128,8 @@ German or Russian when Obsidian is set to one of them.
 | Excluded folders/files | Vault paths (one per line) where auto mode stays inactive | empty |
 | Date position | At the start (after the checkbox) or at the end of the line | end |
 | Date templates | One per line, the date format in braces; the first is used for moved tasks, all are offered in the menu | `<small>[{YYYY-MM-DD}]</small>`, `[{MM.YYYY}]` |
-| Complete templates | Items of the *Complete by template* menu after *Done* | none |
 | Status characters | Characters offered in the *Task status* menu after the open status | `xX-><!/?*nliISpcb"udwkf` (AnuPpuccin) |
+| Complete templates | Items of the *Complete by template* menu after *Done* | none |
 
 ## Styling the completion date
 

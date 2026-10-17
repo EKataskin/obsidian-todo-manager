@@ -151,25 +151,6 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 				text.inputEl.rows = 3;
 			});
 
-		new Setting(containerEl).setName(s.headingCompleteTemplates).setHeading();
-
-		new Setting(containerEl).setDesc(s.settingCompleteTemplatesDesc).addButton((button) =>
-			button.setButtonText(s.buttonAddTemplate).onClick(async () => {
-				const template: CompleteTemplate = {
-					name: "",
-					char: "x",
-					dateTemplate: "",
-					datePosition: this.plugin.settings.datePosition,
-					move: true,
-				};
-				// A new array: the one of the defaults must stay empty.
-				this.plugin.settings.completeTemplates = [...this.plugin.settings.completeTemplates, template];
-				await this.plugin.saveSettings();
-				this.display();
-			})
-		);
-		for (const template of this.plugin.settings.completeTemplates) this.renderCompleteTemplate(containerEl, template);
-
 		new Setting(containerEl).setName(s.headingStatusMenu).setHeading();
 
 		const menuChars = new Setting(containerEl).setName(s.settingMenuCharsName).setDesc(s.settingMenuCharsDesc);
@@ -193,6 +174,25 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 				);
 			});
 		renderStatusPreview(preview, this.plugin.settings.menuChars);
+
+		new Setting(containerEl).setName(s.headingCompleteTemplates).setHeading();
+
+		new Setting(containerEl).setDesc(s.settingCompleteTemplatesDesc).addButton((button) =>
+			button.setButtonText(s.buttonAddTemplate).onClick(async () => {
+				const template: CompleteTemplate = {
+					name: "",
+					char: "x",
+					dateTemplate: "",
+					datePosition: this.plugin.settings.datePosition,
+					move: true,
+				};
+				// A new array: the one of the defaults must stay empty.
+				this.plugin.settings.completeTemplates = [...this.plugin.settings.completeTemplates, template];
+				await this.plugin.saveSettings();
+				this.display();
+			})
+		);
+		for (const template of this.plugin.settings.completeTemplates) this.renderCompleteTemplate(containerEl, template);
 	}
 
 	/** The fields of one complete template in a frame. Invalid input is not saved. */

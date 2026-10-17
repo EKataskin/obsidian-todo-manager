@@ -56,9 +56,9 @@ export default class DoneMoverPlugin extends Plugin {
 				);
 				const lines = this.taskLines(editor);
 				if (lines.length > 0) {
-					this.addCompleteMenu(menu, editor, lines);
 					this.addStatusMenu(menu, editor, lines);
 					this.addDateMenu(menu, editor, lines, info.file?.path ?? "");
+					this.addCompleteMenu(menu, editor, lines);
 				}
 			})
 		);
