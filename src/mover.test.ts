@@ -7,7 +7,7 @@ const OPTS: MoveOptions = {
 	appendDate: false,
 	datePosition: "end",
 	dateTemplate: "✅ {date}",
-	oldDateTemplates: [],
+	otherDateTemplates: [],
 	closedChars: "xX-",
 	returnUnchecked: false,
 	today: new Date(2026, 9, 17),
@@ -62,7 +62,7 @@ describe("moveCompletedTasks", () => {
 	});
 
 	it("does not add a second date when a date of a formatted template is there", () => {
-		const r = run(["## A", "- [x] a [06.2025]"], { appendDate: true, dateTemplate: "({date})", oldDateTemplates: ["[{MM.YYYY}]"] });
+		const r = run(["## A", "- [x] a [06.2025]"], { appendDate: true, dateTemplate: "({date})", otherDateTemplates: ["[{MM.YYYY}]"] });
 		expect(r.text).toContain("> - [x] a [06.2025]");
 		expect(r.text).not.toContain("2026-10-17");
 	});
@@ -73,8 +73,8 @@ describe("moveCompletedTasks", () => {
 		expect(r.text).not.toContain("2026-10-17");
 	});
 
-	it("does not add a second date when a date of an old template is there", () => {
-		const r = run(["## A", "- [x] a ✅ 2026-10-01"], { appendDate: true, dateTemplate: "({date})", oldDateTemplates: ["✅ {date}"] });
+	it("does not add a second date when a date of another template is there", () => {
+		const r = run(["## A", "- [x] a ✅ 2026-10-01"], { appendDate: true, dateTemplate: "({date})", otherDateTemplates: ["✅ {date}"] });
 		expect(r.text).toContain("> - [x] a ✅ 2026-10-01");
 		expect(r.text).not.toContain("2026-10-17");
 	});
@@ -225,10 +225,10 @@ describe("moveCompletedTasks with returnUnchecked", () => {
 		expect(r.text).toBe(["## A", "- [ ] p"].join("\n"));
 	});
 
-	it("strips a date written with an old template", () => {
+	it("strips a date written with another template", () => {
 		const r = run(["## A", "", "> [!done]- X", "> - [ ] p <small>[2026-10-01]</small>"], {
 			...back,
-			oldDateTemplates: ["<small>[{date}]</small>"],
+			otherDateTemplates: ["<small>[{date}]</small>"],
 		});
 		expect(r.text).toBe(["## A", "- [ ] p"].join("\n"));
 	});

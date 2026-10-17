@@ -16,9 +16,9 @@ import {
 	unquote,
 } from "./taskParser";
 
-/** Regex for a completion date written with the template or one of the other known ones. */
+/** Regex for a completion date written with the template or one of the other templates. */
 function dateRegex(opts: MoveOptions): RegExp {
-	return new RegExp([opts.dateTemplate, ...opts.oldDateTemplates].map((t) => `(?:${dateRegexSource(t)})`).join("|"));
+	return new RegExp([opts.dateTemplate, ...opts.otherDateTemplates].map((t) => `(?:${dateRegexSource(t)})`).join("|"));
 }
 
 /** Adds the templated date to closed task lines that do not yet have one. */

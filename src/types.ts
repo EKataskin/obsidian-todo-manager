@@ -14,8 +14,6 @@ export interface DoneMoverSettings {
 	 * moved tasks, all of them in the editor menu.
 	 */
 	dateTemplate: string;
-	/** First templates used before; dates written with them are still recognized. */
-	oldDateTemplates: string[];
 	/** Status chars of closed tasks ("x" in "- [x]"); any other char means open. */
 	closedChars: string;
 	/** Status chars offered in the editor menu, in this order, after the open status (" "). */
@@ -30,7 +28,6 @@ export const DEFAULT_SETTINGS: DoneMoverSettings = {
 	appendCompletionDate: true,
 	datePosition: "end",
 	dateTemplate: "<small>[{YYYY-MM-DD}]</small>\n[{MM.YYYY}]",
-	oldDateTemplates: [],
 	closedChars: "xX-",
 	// The closed chars, then the custom checkboxes of the AnuPpuccin theme.
 	menuChars: 'xX-><!/?*nliISpcb"udwkf',
@@ -46,8 +43,8 @@ export interface MoveOptions {
 	datePosition: DatePosition;
 	/** The template of added dates; must pass isDateTemplate. */
 	dateTemplate: string;
-	/** Other known templates: their dates are not doubled and are stripped on return. */
-	oldDateTemplates: string[];
+	/** The other date templates: their dates are not doubled and are stripped on return. */
+	otherDateTemplates: string[];
 	/** Must not be empty. */
 	closedChars: string;
 	/** When on, blocks with an unchecked line go back from the callout to the list. */

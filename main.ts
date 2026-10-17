@@ -88,6 +88,8 @@ export default class DoneMoverPlugin extends Plugin {
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		// A removed setting: it leaves data.json on the next save.
+		delete (this.settings as { oldDateTemplates?: unknown }).oldDateTemplates;
 	}
 
 	async saveSettings() {
@@ -97,11 +99,6 @@ export default class DoneMoverPlugin extends Plugin {
 	/** The valid lines of the date templates setting. */
 	private dateTemplates(): string[] {
 		return templateLines(this.settings.dateTemplate).filter(isDateTemplate);
-	}
-
-	/** Earlier first templates; one without a date format would match every line. */
-	private oldDateTemplates(): string[] {
-		return this.settings.oldDateTemplates.filter(isDateTemplate);
 	}
 
 	private moveOptions(returnUnchecked: boolean): MoveOptions {
@@ -115,7 +112,7 @@ export default class DoneMoverPlugin extends Plugin {
 			datePosition: this.settings.datePosition,
 			// The first template adds dates, the others are only recognized.
 			dateTemplate: templates[0] ?? templateLines(DEFAULT_SETTINGS.dateTemplate)[0],
-			oldDateTemplates: [...templates.slice(1), ...this.oldDateTemplates()],
+			otherDateTemplates: templates.slice(1),
 			closedChars: this.settings.closedChars || DEFAULT_SETTINGS.closedChars,
 			returnUnchecked,
 			today: new Date(),
@@ -187,16 +184,15 @@ export default class DoneMoverPlugin extends Plugin {
 
 	/**
 	 * "Completion date" with one item per date template, filled with today's
-	 * date, and "Remove date" when a line has a date of any known template.
+	 * date, and "Remove date" when a line has a date of any of them.
 	 */
 	private addDateMenu(menu: Menu, editor: Editor, lines: number[], sourcePath: string) {
 		const templates = this.dateTemplates();
 		if (templates.length === 0) return;
 		const today = new Date();
-		const known = [...templates, ...this.oldDateTemplates()];
 		const removable = lines.some((line) => {
 			const text = editor.getLine(line);
-			return removeDates(text, known) !== text;
+			return removeDates(text, templates) !== text;
 		});
 		const { target } = this.addSubmenu(menu, this.strings.menuCompletionDate, "calendar-check");
 		// Rendered markdown may hold child components; they go when the menu closes.
@@ -229,7 +225,7 @@ export default class DoneMoverPlugin extends Plugin {
 			item
 				.setTitle(this.strings.menuRemoveDate)
 				.setIcon("calendar-x")
-				.onClick(() => this.changeLines(editor, lines, (text) => removeDates(text, known) ?? text))
+				.onClick(() => this.changeLines(editor, lines, (text) => removeDates(text, templates) ?? text))
 		);
 	}
 

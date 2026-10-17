@@ -38,15 +38,11 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-	/** The first date template when the tab was opened, to remember it once it changes. */
-	private templateOnOpen = "";
-
 	display(): void {
 		const { containerEl } = this;
 		const s = this.plugin.strings;
 		containerEl.empty();
 		containerEl.addClass("todo-manager-settings");
-		this.templateOnOpen = templateLines(this.plugin.settings.dateTemplate)[0] ?? "";
 
 		new Setting(containerEl).setName(s.headingMove).setHeading();
 
@@ -178,15 +174,5 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 				);
 			});
 		renderStatusPreview(preview, this.plugin.settings.menuChars);
-	}
-
-	// Done on close, not on every keystroke, so half-typed templates are not kept.
-	hide(): void {
-		super.hide();
-		const settings = this.plugin.settings;
-		const old = this.templateOnOpen;
-		if (!old || templateLines(settings.dateTemplate).includes(old) || settings.oldDateTemplates.includes(old)) return;
-		settings.oldDateTemplates = [...settings.oldDateTemplates, old];
-		void this.plugin.saveSettings();
 	}
 }

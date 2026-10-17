@@ -51,9 +51,9 @@ German or Russian when Obsidian is set to one of them.
 - With *Append completion date* on, moved closed tasks get today's date by
   the first line of *Date templates*.
 - A completion date is recognized when it matches any line of *Date
-  templates* or a first template used before: when the first line changes,
-  the old one is remembered as the settings window closes. Such dates are
-  not added twice and are removed on moving back.
+  templates*. Such dates are not added twice and are removed on moving
+  back. A date written with a template that is no longer in the list is
+  left as it is.
 
 ## Completion date
 
@@ -69,7 +69,7 @@ German or Russian when Obsidian is set to one of them.
   the same template is replaced where it stands. Otherwise the date goes
   where *Date position* says. For another date, edit it after inserting.
 - *Remove date* at the end of the submenu removes the dates of every
-  template and of the first templates used before. It is shown only when
+  template. It is shown only when
   one of the tasks has such a date.
 
 ## Status menu
