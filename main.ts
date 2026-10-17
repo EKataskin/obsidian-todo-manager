@@ -1,4 +1,4 @@
-import { Editor, MarkdownFileInfo, MarkdownView, Menu, MenuItem, Notice, Plugin, TFile, moment, sanitizeHTMLToDom } from "obsidian";
+import { Editor, MarkdownFileInfo, MarkdownView, Menu, MenuItem, Notice, Plugin, TFile, moment, Component, MarkdownRenderer } from "obsidian";
 import { DEFAULT_SETTINGS, DoneMoverSettings, MoveOptions, MoveResult } from "./src/types";
 import { DoneMoverSettingTab } from "./src/settings";
 import { changedRange, moveCompletedTasks } from "./src/mover";
@@ -46,7 +46,7 @@ export default class DoneMoverPlugin extends Plugin {
 		});
 
 		this.registerEvent(
-			this.app.workspace.on("editor-menu", (menu, editor) => {
+			this.app.workspace.on("editor-menu", (menu, editor, info) => {
 				menu.addItem((item) =>
 					item
 						.setTitle(this.strings.cmdMoveCompleted)
@@ -56,7 +56,7 @@ export default class DoneMoverPlugin extends Plugin {
 				const lines = this.taskLines(editor);
 				if (lines.length > 0) {
 					this.addStatusMenu(menu, editor, lines);
-					this.addDateMenu(menu, editor, lines);
+					this.addDateMenu(menu, editor, lines, info.file?.path ?? "");
 				}
 			})
 		);
@@ -189,7 +189,7 @@ export default class DoneMoverPlugin extends Plugin {
 	 * "Completion date" with one item per date template, filled with today's
 	 * date, and "Remove date" when a line has a date of any known template.
 	 */
-	private addDateMenu(menu: Menu, editor: Editor, lines: number[]) {
+	private addDateMenu(menu: Menu, editor: Editor, lines: number[], sourcePath: string) {
 		const templates = this.dateTemplates();
 		if (templates.length === 0) return;
 		const today = new Date();
@@ -199,11 +199,21 @@ export default class DoneMoverPlugin extends Plugin {
 			return removeDates(text, known) !== text;
 		});
 		const { target } = this.addSubmenu(menu, this.strings.menuCompletionDate, "calendar-check");
+		// Rendered markdown may hold child components; they go when the menu closes.
+		const renderer = new Component();
+		renderer.load();
+		menu.onHide(() => renderer.unload());
 		for (const template of templates) {
 			target.addItem((item) =>
 				item
-					// HTML of the template is shown as it looks in the note, e.g. <small>.
-					.setTitle(sanitizeHTMLToDom(formatDate(template, today)))
+					// The template is shown as it looks in the note, e.g. <small> or **bold**.
+					.setTitle(
+						createFragment((el) => {
+							// Themes style rendered markdown only inside "markdown-rendered".
+							const span = el.createSpan("todo-manager-date-item markdown-rendered");
+							void MarkdownRenderer.render(this.app, formatDate(template, today), span, sourcePath, renderer);
+						})
+					)
 					.onClick(() =>
 						this.changeLines(
 							editor,

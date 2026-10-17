@@ -63,7 +63,7 @@ German or Russian when Obsidian is set to one of them.
   Text outside the braces stays as it is.
 - The first template is used when tasks are moved. All of them are offered
   in the editor's right-click menu under *Completion date*, each already
-  filled with today's date.
+  filled with today's date and rendered as in the note (HTML and markdown).
 - Choosing a template puts the date into the task in the cursor's line, or
   into every task in the selection, with any status. A date written with
   the same template is replaced where it stands. Otherwise the date goes

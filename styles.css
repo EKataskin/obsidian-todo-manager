@@ -39,3 +39,9 @@
 .menu-item:has(.todo-manager-status-item.is-current) {
 	background-color: var(--background-modifier-active-hover);
 }
+
+/* A date template in the editor menu: rendered markdown without paragraph gaps. */
+.todo-manager-date-item > p {
+	display: inline;
+	margin: 0;
+}
