@@ -8,12 +8,25 @@ export interface Strings {
 	menuTaskStatus: string;
 	menuCompletionDate: string;
 	menuRemoveDate: string;
+	menuCompleteByTemplate: string;
+	completeDefaultName: string;
 	noticeMoved: (moved: number, returned: number) => string;
 	noticeAutoMoved: (count: number) => string;
 	noticeNoCompleted: string;
 	headingMove: string;
 	headingStatusMenu: string;
 	headingDate: string;
+	headingCompleteTemplates: string;
+	settingCompleteTemplatesDesc: string;
+	buttonAddTemplate: string;
+	buttonDeleteTemplate: string;
+	settingTemplateNameName: string;
+	settingTemplateCharName: string;
+	settingTemplateCharDesc: string;
+	settingTemplateDateName: string;
+	settingTemplateDateDesc: string;
+	settingTemplateMoveName: string;
+	settingTemplateMoveDesc: string;
 	settingAutoModeName: string;
 	settingAutoModeDesc: string;
 	settingCalloutName: string;
@@ -40,12 +53,27 @@ const en: Strings = {
 	menuTaskStatus: "Task status",
 	menuCompletionDate: "Completion date",
 	menuRemoveDate: "Remove date",
+	menuCompleteByTemplate: "Complete by template",
+	completeDefaultName: "Done",
 	noticeMoved: (moved, returned) => `Moved: ${moved}, returned: ${returned}.`,
 	noticeAutoMoved: (count) => `Automatically moved ${count} completed task(s).`,
 	noticeNoCompleted: "Nothing to move.",
 	headingMove: "Moving completed tasks",
 	headingStatusMenu: "Status menu",
 	headingDate: "Completion date",
+	headingCompleteTemplates: "Complete templates",
+	settingCompleteTemplatesDesc:
+		'Items of the "Complete by template" editor menu. Each sets the status character, adds a date and moves the task in one step. ' +
+		'"Done" always comes first: it puts "x", adds the date by the first date template when "Append completion date" is on, and moves the task.',
+	buttonAddTemplate: "Add template",
+	buttonDeleteTemplate: "Delete template",
+	settingTemplateNameName: "Name",
+	settingTemplateCharName: "Status character",
+	settingTemplateCharDesc: 'What goes into the brackets, e.g. "x".',
+	settingTemplateDateName: "Date template",
+	settingTemplateDateDesc: 'Written as in "Date templates". Empty means no date. The date is added even when the task has one.',
+	settingTemplateMoveName: "Move to the done block",
+	settingTemplateMoveDesc: "Moves the task with its sub-tasks, whatever its status character.",
 	settingAutoModeName: "Auto mode",
 	settingAutoModeDesc:
 		"Move fully completed tasks automatically as soon as they are checked " +
@@ -85,12 +113,27 @@ const de: Strings = {
 	menuTaskStatus: "Aufgabenstatus",
 	menuCompletionDate: "Erledigt-Datum",
 	menuRemoveDate: "Datum entfernen",
+	menuCompleteByTemplate: "Nach Vorlage erledigen",
+	completeDefaultName: "Erledigt",
 	noticeMoved: (moved, returned) => `Verschoben: ${moved}, zurückgeholt: ${returned}.`,
 	noticeAutoMoved: (count) => `${count} erledigte Aufgabe(n) automatisch verschoben.`,
 	noticeNoCompleted: "Nichts zu verschieben.",
 	headingMove: "Erledigte Aufgaben verschieben",
 	headingStatusMenu: "Statusmenü",
 	headingDate: "Erledigt-Datum",
+	headingCompleteTemplates: "Erledigt-Vorlagen",
+	settingCompleteTemplatesDesc:
+		"Einträge des Editor-Menüs „Nach Vorlage erledigen\". Jeder setzt das Statuszeichen, fügt ein Datum hinzu und verschiebt die Aufgabe in einem Schritt. " +
+		"„Erledigt\" steht immer an erster Stelle: setzt \"x\", fügt das Datum nach der ersten Datumsvorlage hinzu, wenn „Erledigt-Datum anhängen\" an ist, und verschiebt die Aufgabe.",
+	buttonAddTemplate: "Vorlage hinzufügen",
+	buttonDeleteTemplate: "Vorlage löschen",
+	settingTemplateNameName: "Name",
+	settingTemplateCharName: "Statuszeichen",
+	settingTemplateCharDesc: 'Was in die Klammern kommt, z. B. "x".',
+	settingTemplateDateName: "Datumsvorlage",
+	settingTemplateDateDesc: "Wie bei „Datumsvorlagen\". Leer heißt kein Datum. Das Datum wird auch hinzugefügt, wenn die Aufgabe schon eins hat.",
+	settingTemplateMoveName: "In den Erledigt-Block verschieben",
+	settingTemplateMoveDesc: "Verschiebt die Aufgabe mit ihren Unteraufgaben, unabhängig vom Statuszeichen.",
 	settingAutoModeName: "Auto-Modus",
 	settingAutoModeDesc:
 		"Vollständig erledigte Aufgaben automatisch verschieben, sobald sie " +
@@ -130,12 +173,27 @@ const ru: Strings = {
 	menuTaskStatus: "Статус задачи",
 	menuCompletionDate: "Дата выполнения",
 	menuRemoveDate: "Удалить дату",
+	menuCompleteByTemplate: "Выполнить по шаблону",
+	completeDefaultName: "Выполнено",
 	noticeMoved: (moved, returned) => `Перенесено: ${moved}, возвращено: ${returned}.`,
 	noticeAutoMoved: (count) => `Автоматически перенесено выполненных задач: ${count}.`,
 	noticeNoCompleted: "Нечего переносить.",
 	headingMove: "Перенос выполненных задач",
 	headingStatusMenu: "Меню статуса",
 	headingDate: "Дата выполнения",
+	headingCompleteTemplates: "Шаблоны выполнения",
+	settingCompleteTemplatesDesc:
+		"Пункты меню редактора «Выполнить по шаблону». Каждый за один шаг ставит символ статуса, добавляет дату и переносит задачу. " +
+		"«Выполнено» всегда идёт первым: ставит «x», добавляет дату по первому шаблону даты, если включено «Добавлять дату выполнения», и переносит задачу.",
+	buttonAddTemplate: "Добавить шаблон",
+	buttonDeleteTemplate: "Удалить шаблон",
+	settingTemplateNameName: "Наименование",
+	settingTemplateCharName: "Символ выполнения",
+	settingTemplateCharDesc: "Что ставить в скобки, например «x».",
+	settingTemplateDateName: "Шаблон даты",
+	settingTemplateDateDesc: "Пишется как в «Шаблонах даты». Пусто - без даты. Дата добавляется, даже если у задачи она уже есть.",
+	settingTemplateMoveName: "Переносить в блок выполненных",
+	settingTemplateMoveDesc: "Переносит задачу вместе с подзадачами, какой бы ни был символ.",
 	settingAutoModeName: "Автоперенос",
 	settingAutoModeDesc:
 		"Переносить полностью выполненные задачи автоматически, как только они " +

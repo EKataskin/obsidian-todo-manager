@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dateRegexSource, formatDate, isDateTemplate, removeDates, setDateStamp } from "./dateTemplate";
+import { addDate, dateRegexSource, formatDate, isDateTemplate, removeDates, setDateStamp } from "./dateTemplate";
 
 const DAY = new Date(2026, 9, 7);
 
@@ -83,5 +83,12 @@ describe("setDateStamp", () => {
 
 	it("returns null for a line that is not a task", () => {
 		expect(setDateStamp("text", "[{MM.YYYY}]", DAY, "end")).toBeNull();
+	});
+});
+
+describe("addDate", () => {
+	it("adds a date even when one of the same template is there", () => {
+		expect(addDate("- [x] a [09.2026]", "[{MM.YYYY}]", DAY, "end")).toBe("- [x] a [09.2026] [10.2026]");
+		expect(addDate("- [x] a", "[{MM.YYYY}]", DAY, "start")).toBe("- [x] [10.2026] a");
 	});
 });

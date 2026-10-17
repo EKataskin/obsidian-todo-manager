@@ -20,6 +20,8 @@ export interface DoneMoverSettings {
 	menuChars: string;
 	/** Vault paths (folders or files) in which auto mode stays inactive. */
 	excludedPaths: string[];
+	/** Templates of the "Complete by template" menu, after the built-in one. */
+	completeTemplates: CompleteTemplate[];
 }
 
 export const DEFAULT_SETTINGS: DoneMoverSettings = {
@@ -32,7 +34,21 @@ export const DEFAULT_SETTINGS: DoneMoverSettings = {
 	// The closed chars, then the custom checkboxes of the AnuPpuccin theme.
 	menuChars: 'xX-><!/?*nliISpcb"udwkf',
 	excludedPaths: [],
+	completeTemplates: [],
 };
+
+/** A menu item that sets the status, adds a date and moves the task in one step. */
+export interface CompleteTemplate {
+	/** The menu item title. */
+	name: string;
+	/** The status char put into the brackets. */
+	char: string;
+	/** The template of the added date; empty means no date. */
+	dateTemplate: string;
+	datePosition: DatePosition;
+	/** When on, the changed tasks go to the done block, whatever their status. */
+	move: boolean;
+}
 
 export type DatePosition = "start" | "end";
 
@@ -51,6 +67,12 @@ export interface MoveOptions {
 	returnUnchecked: boolean;
 	/** Today's date. Passed in so the logic stays deterministic/testable. */
 	today: Date;
+	/**
+	 * When set, only the blocks of these line indices move: a block whose task
+	 * line is in the set moves whatever its status, a block with only sub-lines
+	 * in it moves when it is fully done.
+	 */
+	moveLines?: ReadonlySet<number>;
 }
 
 export interface MoveResult {

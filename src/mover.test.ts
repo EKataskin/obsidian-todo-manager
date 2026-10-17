@@ -260,6 +260,28 @@ describe("moveCompletedTasks with returnUnchecked", () => {
 	});
 });
 
+describe("moveCompletedTasks with moveLines", () => {
+	it("moves only the blocks of the lines, also an open one", () => {
+		const r = run(["## A", "- [x] other", "- [/] mine", "## B", "- [x] far"], { moveLines: new Set([2]) });
+		expect(r.movedCount).toBe(1);
+		expect(r.text).toBe(
+			["## A", "- [x] other", "", "> [!done]- Выполнено", "> - [/] mine", "", "## B", "- [x] far"].join("\n")
+		);
+	});
+
+	it("moves the block of a sub-line only when it is fully done", () => {
+		const lines = ["## A", "- [x] p", "\t- [x] c1", "\t- [ ] c2"];
+		expect(run(lines, { moveLines: new Set([2]) }).movedCount).toBe(0);
+		lines[3] = "\t- [x] c2";
+		expect(run(lines, { moveLines: new Set([3]) }).movedCount).toBe(1);
+	});
+
+	it("finds the lines of a lower section by their index in the file", () => {
+		const r = run(["## A", "- [x] a", "## B", "- [x] b"], { moveLines: new Set([3]) });
+		expect(r.text).toBe(["## A", "- [x] a", "## B", "", "> [!done]- Выполнено", "> - [x] b"].join("\n"));
+	});
+});
+
 describe("changedRange", () => {
 	function apply(before: string, after: string) {
 		const r = changedRange(before, after);

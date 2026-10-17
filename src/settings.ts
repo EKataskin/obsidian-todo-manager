@@ -4,7 +4,7 @@ import { calloutType } from "./taskParser";
 import { taskCharsFromCss } from "./taskChars";
 import { createStatusIcon, statusChars } from "./statusIcon";
 import { isDateTemplate, templateLines } from "./dateTemplate";
-import { DatePosition } from "./types";
+import { CompleteTemplate, DatePosition } from "./types";
 
 /** Marks a field whose input is not saved; styled in styles.css. */
 function markInvalid(input: HTMLElement, invalid: boolean) {
@@ -151,6 +151,25 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 				text.inputEl.rows = 3;
 			});
 
+		new Setting(containerEl).setName(s.headingCompleteTemplates).setHeading();
+
+		new Setting(containerEl).setDesc(s.settingCompleteTemplatesDesc).addButton((button) =>
+			button.setButtonText(s.buttonAddTemplate).onClick(async () => {
+				const template: CompleteTemplate = {
+					name: "",
+					char: "x",
+					dateTemplate: "",
+					datePosition: this.plugin.settings.datePosition,
+					move: true,
+				};
+				// A new array: the one of the defaults must stay empty.
+				this.plugin.settings.completeTemplates = [...this.plugin.settings.completeTemplates, template];
+				await this.plugin.saveSettings();
+				this.display();
+			})
+		);
+		for (const template of this.plugin.settings.completeTemplates) this.renderCompleteTemplate(containerEl, template);
+
 		new Setting(containerEl).setName(s.headingStatusMenu).setHeading();
 
 		const menuChars = new Setting(containerEl).setName(s.settingMenuCharsName).setDesc(s.settingMenuCharsDesc);
@@ -174,5 +193,86 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 				);
 			});
 		renderStatusPreview(preview, this.plugin.settings.menuChars);
+	}
+
+	/** The fields of one complete template in a frame. Invalid input is not saved. */
+	private renderCompleteTemplate(parent: HTMLElement, template: CompleteTemplate) {
+		const s = this.plugin.strings;
+		const el = parent.createDiv("todo-manager-complete-template");
+
+		new Setting(el)
+			.setName(s.settingTemplateNameName)
+			.addText((text) => {
+				markInvalid(text.inputEl, template.name === "");
+				text.setValue(template.name).onChange(async (value) => {
+					const name = value.trim();
+					markInvalid(text.inputEl, name === "");
+					if (name === "") return;
+					template.name = name;
+					await this.plugin.saveSettings();
+				});
+			})
+			.addExtraButton((button) =>
+				button
+					.setIcon("trash-2")
+					.setTooltip(s.buttonDeleteTemplate)
+					.onClick(async () => {
+						this.plugin.settings.completeTemplates = this.plugin.settings.completeTemplates.filter((t) => t !== template);
+						await this.plugin.saveSettings();
+						this.display();
+					})
+			);
+
+		new Setting(el)
+			.setName(s.settingTemplateCharName)
+			.setDesc(s.settingTemplateCharDesc)
+			.addText((text) => {
+				text.inputEl.maxLength = 1;
+				text.setValue(template.char).onChange(async (value) => {
+					const char = value.trim();
+					markInvalid(text.inputEl, char === "");
+					if (char === "") return;
+					template.char = char;
+					await this.plugin.saveSettings();
+				});
+			});
+
+		new Setting(el)
+			.setName(s.settingTemplateDateName)
+			.setDesc(s.settingTemplateDateDesc)
+			.addText((text) =>
+				text
+					.setPlaceholder("[{MM.YYYY}]")
+					.setValue(template.dateTemplate)
+					.onChange(async (value) => {
+						const date = value.trim();
+						const valid = date === "" || isDateTemplate(date);
+						markInvalid(text.inputEl, !valid);
+						if (!valid) return;
+						template.dateTemplate = date;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(el).setName(s.settingDatePositionName).addDropdown((dropdown) =>
+			dropdown
+				.addOption("start", s.datePositionStart)
+				.addOption("end", s.datePositionEnd)
+				.setValue(template.datePosition)
+				.onChange(async (value) => {
+					template.datePosition = value as DatePosition;
+					await this.plugin.saveSettings();
+				})
+		);
+
+		new Setting(el)
+			.setName(s.settingTemplateMoveName)
+			.setDesc(s.settingTemplateMoveDesc)
+			.addToggle((toggle) =>
+				toggle.setValue(template.move).onChange(async (value) => {
+					template.move = value;
+					await this.plugin.saveSettings();
+				})
+			);
 	}
 }

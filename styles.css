@@ -45,3 +45,18 @@
 	display: inline;
 	margin: 0;
 }
+
+/* A complete template in the settings: its fields in a frame. */
+.todo-manager-complete-template {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	padding: 0 var(--size-4-3);
+	margin-bottom: var(--size-4-3);
+}
+
+/* A complete template in the editor menu: the status icon, then the name. */
+.todo-manager-template-item {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-4-2);
+}

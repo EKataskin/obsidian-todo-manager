@@ -75,6 +75,17 @@ function hasUncheckedTask(parsed: ParsedLine[], block: TaskBlock): boolean {
 	return false;
 }
 
+/** True when the block moves: see MoveOptions.moveLines. `offset` is the section's first line. */
+function shouldMove(parsed: ParsedLine[], block: TaskBlock, offset: number, opts: MoveOptions): boolean {
+	const only = opts.moveLines;
+	if (!only) return isBlockFullyDone(parsed, block);
+	if (only.has(offset + block.start)) return true;
+	for (let i = block.start + 1; i <= block.end; i++) {
+		if (only.has(offset + i)) return isBlockFullyDone(parsed, block);
+	}
+	return false;
+}
+
 /** Removes the templated completion date from open task lines. */
 function stripDateFromOpen(blockLines: string[], opts: MoveOptions): string[] {
 	const re = new RegExp(`\\s*(?:${dateRegex(opts).source})`);
@@ -89,11 +100,13 @@ function stripDateFromOpen(blockLines: string[], opts: MoveOptions): string[] {
  * Processes one section: fully completed top-level tasks go to the top of the
  * section's callout; with `returnUnchecked`, callout blocks that have an
  * unchecked line go back to the end of the list. Returns null when the
- * section stays unchanged. `atFileStart` tells whether the section opens the
- * file, `hasNextLine` whether a heading follows.
+ * section stays unchanged. `offset` is the section's first line in the file,
+ * `atFileStart` tells whether the section opens the file, `hasNextLine`
+ * whether a heading follows.
  */
 function processSection(
 	content: string[],
+	offset: number,
 	atFileStart: boolean,
 	hasNextLine: boolean,
 	type: string,
@@ -101,7 +114,7 @@ function processSection(
 ): SectionResult | null {
 	const parsed = parseLines(content, opts.closedChars);
 	const blocks = topLevelBlocks(content, parsed);
-	const done = blocks.filter((b) => isBlockFullyDone(parsed, b));
+	const done = blocks.filter((b) => shouldMove(parsed, b, offset, opts));
 	const callout = findCallout(content, { contentStart: 0, contentEnd: content.length }, type);
 
 	const removed = new Set<number>();
@@ -164,7 +177,7 @@ function processSection(
 
 	// Returned tasks go after the last open task block, else after the last
 	// text line before the callout, else to the top of the section.
-	const open = blocks.filter((b) => !isBlockFullyDone(parsed, b));
+	const open = blocks.filter((b) => !done.includes(b));
 	let anchor = open.length > 0 ? open[open.length - 1].end : -1;
 	if (anchor === -1) {
 		for (let i = callout.header - 1; i >= 0; i--) {
@@ -218,6 +231,7 @@ export function moveCompletedTasks(text: string, opts: MoveOptions): MoveResult 
 	for (const s of splitSections(lines).reverse()) {
 		const r = processSection(
 			lines.slice(s.contentStart, s.contentEnd),
+			s.contentStart,
 			s.contentStart === 0,
 			s.contentEnd < lines.length,
 			type,

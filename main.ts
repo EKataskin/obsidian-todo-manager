@@ -1,5 +1,5 @@
 import { Editor, MarkdownFileInfo, MarkdownView, Menu, MenuItem, Notice, Plugin, TFile, moment, Component, MarkdownRenderer } from "obsidian";
-import { DEFAULT_SETTINGS, DoneMoverSettings, MoveOptions, MoveResult } from "./src/types";
+import { CompleteTemplate, DEFAULT_SETTINGS, DoneMoverSettings, MoveOptions, MoveResult } from "./src/types";
 import { DoneMoverSettingTab } from "./src/settings";
 import { changedRange, moveCompletedTasks } from "./src/mover";
 import { calloutType } from "./src/taskParser";
@@ -7,6 +7,7 @@ import { isPathExcluded } from "./src/exclusions";
 import { setTaskStatus, taskStatus } from "./src/taskChars";
 import { createStatusIcon, statusChars } from "./src/statusIcon";
 import { formatDate, isDateTemplate, removeDates, setDateStamp, templateLines } from "./src/dateTemplate";
+import { applyCompleteTemplate } from "./src/completeTemplate";
 import { Lang, Strings, getStrings } from "./src/i18n";
 
 /** Delay before the auto mode reacts, so it does not interrupt typing. */
@@ -55,6 +56,7 @@ export default class DoneMoverPlugin extends Plugin {
 				);
 				const lines = this.taskLines(editor);
 				if (lines.length > 0) {
+					this.addCompleteMenu(menu, editor, lines);
 					this.addStatusMenu(menu, editor, lines);
 					this.addDateMenu(menu, editor, lines, info.file?.path ?? "");
 				}
@@ -229,6 +231,39 @@ export default class DoneMoverPlugin extends Plugin {
 		);
 	}
 
+	/** The built-in complete template, made of the general settings. */
+	private defaultTemplate(): CompleteTemplate {
+		return {
+			name: this.strings.completeDefaultName,
+			// The char Obsidian itself puts on a click in Reading view.
+			char: "x",
+			dateTemplate: this.settings.appendCompletionDate ? this.moveOptions(false).dateTemplate : "",
+			datePosition: this.settings.datePosition,
+			move: true,
+		};
+	}
+
+	/** "Complete by template" with the built-in template first, then the ones of the settings. */
+	private addCompleteMenu(menu: Menu, editor: Editor, lines: number[]) {
+		const templates = [this.defaultTemplate(), ...this.settings.completeTemplates.filter((t) => t.name && t.char)];
+		const { target } = this.addSubmenu(menu, this.strings.menuCompleteByTemplate, "list-checks");
+		for (const template of templates) {
+			target.addItem((item) =>
+				item
+					.setTitle(
+						createFragment((el) => {
+							const span = el.createSpan("todo-manager-template-item");
+							createStatusIcon(span, template.char);
+							span.createSpan({ text: template.name });
+						})
+					)
+					.onClick(() =>
+						this.replaceText(editor, applyCompleteTemplate(editor.getValue(), lines, template, this.moveOptions(false)))
+					)
+			);
+		}
+	}
+
 	/** "Task status" with one item per status char. */
 	private addStatusMenu(menu: Menu, editor: Editor, lines: number[]) {
 		const current = new Set(lines.map((line) => taskStatus(editor.getLine(line))));
@@ -275,10 +310,14 @@ export default class DoneMoverPlugin extends Plugin {
 		}, AUTO_MOVE_DEBOUNCE_MS);
 	}
 
-	/** Replaces only the changed part, so the cursor, scroll and folds elsewhere stay put. */
 	private applyResult(editor: Editor, result: MoveResult) {
-		if (result.movedCount + result.returnedCount === 0) return;
-		const { from, to, insert } = changedRange(editor.getValue(), result.text);
+		if (result.movedCount + result.returnedCount > 0) this.replaceText(editor, result.text);
+	}
+
+	/** Replaces only the changed part, so the cursor, scroll and folds elsewhere stay put. */
+	private replaceText(editor: Editor, text: string) {
+		const { from, to, insert } = changedRange(editor.getValue(), text);
+		if (from === to && insert === "") return;
 		editor.replaceRange(insert, editor.offsetToPos(from), editor.offsetToPos(to));
 	}
 }

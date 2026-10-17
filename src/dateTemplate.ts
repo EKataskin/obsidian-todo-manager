@@ -61,11 +61,20 @@ export function removeDates(line: string, templates: string[]): string | null {
  * not a task.
  */
 export function setDateStamp(line: string, template: string, today: Date, position: DatePosition): string | null {
+	const re = new RegExp(dateRegexSource(template));
+	if (STATUS_RE.test(line) && re.test(line)) return line.replace(re, () => formatDate(template, today));
+	return addDate(line, template, today, position);
+}
+
+/**
+ * The task line with today's date by the template added after the checkbox
+ * or at the end, even when it has a date already. Null when the line is not
+ * a task.
+ */
+export function addDate(line: string, template: string, today: Date, position: DatePosition): string | null {
 	const m = line.match(STATUS_RE);
 	if (!m) return null;
 	const stamp = formatDate(template, today);
-	const re = new RegExp(dateRegexSource(template));
-	if (re.test(line)) return line.replace(re, () => stamp);
 	if (position === "end") return line.replace(/\s*$/, "") + " " + stamp;
 	const at = m[0].length + 1; // after "]"
 	const text = line.slice(at).trim();
