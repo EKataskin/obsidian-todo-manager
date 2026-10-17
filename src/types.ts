@@ -9,9 +9,12 @@ export interface DoneMoverSettings {
 	appendCompletionDate: boolean;
 	/** Where the date goes: right after the checkbox or at the end of the line. */
 	datePosition: DatePosition;
-	/** Date text; "{date}" is replaced with YYYY-MM-DD. */
+	/**
+	 * Date templates, one per line, e.g. "[{MM.YYYY}]": the first one is used for
+	 * moved tasks, all of them in the editor menu.
+	 */
 	dateTemplate: string;
-	/** Templates used before; dates written with them are still recognized. */
+	/** First templates used before; dates written with them are still recognized. */
 	oldDateTemplates: string[];
 	/** Status chars of closed tasks ("x" in "- [x]"); any other char means open. */
 	closedChars: string;
@@ -26,7 +29,7 @@ export const DEFAULT_SETTINGS: DoneMoverSettings = {
 	calloutHeader: "> [!done]- Done",
 	appendCompletionDate: true,
 	datePosition: "end",
-	dateTemplate: "<small>[{date}]</small>",
+	dateTemplate: "<small>[{YYYY-MM-DD}]</small>\n[{MM.YYYY}]",
 	oldDateTemplates: [],
 	closedChars: "xX-",
 	// The closed chars, then the custom checkboxes of the AnuPpuccin theme.
@@ -41,16 +44,16 @@ export interface MoveOptions {
 	calloutHeader: string;
 	appendDate: boolean;
 	datePosition: DatePosition;
-	/** Must contain "{date}". */
+	/** The template of added dates; must pass isDateTemplate. */
 	dateTemplate: string;
-	/** Earlier templates: their dates are not doubled and are stripped on return. */
+	/** Other known templates: their dates are not doubled and are stripped on return. */
 	oldDateTemplates: string[];
 	/** Must not be empty. */
 	closedChars: string;
 	/** When on, blocks with an unchecked line go back from the callout to the list. */
 	returnUnchecked: boolean;
-	/** Today's date as YYYY-MM-DD. Passed in so the logic stays deterministic/testable. */
-	today: string;
+	/** Today's date. Passed in so the logic stays deterministic/testable. */
+	today: Date;
 }
 
 export interface MoveResult {

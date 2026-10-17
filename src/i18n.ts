@@ -6,11 +6,14 @@ export type Lang = "en" | "de" | "ru";
 export interface Strings {
 	cmdMoveCompleted: string;
 	menuTaskStatus: string;
+	menuCompletionDate: string;
+	menuRemoveDate: string;
 	noticeMoved: (moved: number, returned: number) => string;
 	noticeAutoMoved: (count: number) => string;
 	noticeNoCompleted: string;
 	headingMove: string;
 	headingStatusMenu: string;
+	headingDate: string;
 	settingAutoModeName: string;
 	settingAutoModeDesc: string;
 	settingCalloutName: string;
@@ -35,11 +38,14 @@ export interface Strings {
 const en: Strings = {
 	cmdMoveCompleted: "Move completed tasks",
 	menuTaskStatus: "Task status",
+	menuCompletionDate: "Completion date",
+	menuRemoveDate: "Remove date",
 	noticeMoved: (moved, returned) => `Moved: ${moved}, returned: ${returned}.`,
 	noticeAutoMoved: (count) => `Automatically moved ${count} completed task(s).`,
 	noticeNoCompleted: "Nothing to move.",
 	headingMove: "Moving completed tasks",
 	headingStatusMenu: "Status menu",
+	headingDate: "Completion date",
 	settingAutoModeName: "Auto mode",
 	settingAutoModeDesc:
 		"Move fully completed tasks automatically as soon as they are checked " +
@@ -58,14 +64,16 @@ const en: Strings = {
 		'"From theme" puts the closed task characters first, then the characters styled by the current theme and CSS snippets.',
 	buttonFromTheme: "From theme",
 	settingDateName: "Append completion date",
-	settingDateDesc: "Adds the completion date to every moved, closed task line.",
+	settingDateDesc: "Adds the completion date by the first date template to every moved, closed task line.",
 	settingDatePositionName: "Date position",
 	settingDatePositionDesc: "Where the date goes in the task line.",
 	datePositionStart: "At the start (after the checkbox)",
 	datePositionEnd: "At the end",
-	settingDateTemplateName: "Date template",
+	settingDateTemplateName: "Date templates",
 	settingDateTemplateDesc:
-		'Text of the date, "{date}" is replaced with YYYY-MM-DD, e.g. "✅ {date}" or "[completion:: {date}]".',
+		"One template per line. The date format goes in braces and is made of YYYY, MM, DD, M and D, " +
+		'e.g. "✅ {YYYY-MM-DD}" or "[{MM.YYYY}]". The first template is used for moved tasks, ' +
+		'all of them are offered in the editor menu under "Completion date".',
 	settingExcludedName: "Excluded folders/files",
 	settingExcludedDesc:
 		"One vault path per line. Auto mode stays inactive in these folders " +
@@ -75,11 +83,14 @@ const en: Strings = {
 const de: Strings = {
 	cmdMoveCompleted: "Erledigte Aufgaben verschieben",
 	menuTaskStatus: "Aufgabenstatus",
+	menuCompletionDate: "Erledigt-Datum",
+	menuRemoveDate: "Datum entfernen",
 	noticeMoved: (moved, returned) => `Verschoben: ${moved}, zurückgeholt: ${returned}.`,
 	noticeAutoMoved: (count) => `${count} erledigte Aufgabe(n) automatisch verschoben.`,
 	noticeNoCompleted: "Nichts zu verschieben.",
 	headingMove: "Erledigte Aufgaben verschieben",
 	headingStatusMenu: "Statusmenü",
+	headingDate: "Erledigt-Datum",
 	settingAutoModeName: "Auto-Modus",
 	settingAutoModeDesc:
 		"Vollständig erledigte Aufgaben automatisch verschieben, sobald sie " +
@@ -98,14 +109,16 @@ const de: Strings = {
 		"„Aus dem Theme\" setzt die Zeichen für abgeschlossene Aufgaben an den Anfang, danach die Zeichen, die das aktuelle Theme und die CSS-Snippets gestalten.",
 	buttonFromTheme: "Aus dem Theme",
 	settingDateName: "Erledigt-Datum anhängen",
-	settingDateDesc: "Fügt jeder verschobenen, abgeschlossenen Aufgabe das Erledigt-Datum hinzu.",
+	settingDateDesc: "Fügt jeder verschobenen, abgeschlossenen Aufgabe das Erledigt-Datum nach der ersten Datumsvorlage hinzu.",
 	settingDatePositionName: "Position des Datums",
 	settingDatePositionDesc: "Wo das Datum in der Aufgabenzeile steht.",
 	datePositionStart: "Am Anfang (nach dem Kontrollkästchen)",
 	datePositionEnd: "Am Ende",
-	settingDateTemplateName: "Datumsvorlage",
+	settingDateTemplateName: "Datumsvorlagen",
 	settingDateTemplateDesc:
-		'Text des Datums, "{date}" wird durch JJJJ-MM-TT ersetzt, z. B. "✅ {date}" oder "[completion:: {date}]".',
+		"Eine Vorlage pro Zeile. Das Datumsformat steht in geschweiften Klammern und besteht aus YYYY, MM, DD, M und D, " +
+		'z. B. "✅ {YYYY-MM-DD}" oder "[{MM.YYYY}]". Die erste Vorlage gilt für verschobene Aufgaben, ' +
+		"alle werden im Editor-Menü unter „Erledigt-Datum\" angeboten.",
 	settingExcludedName: "Ausgeschlossene Ordner/Dateien",
 	settingExcludedDesc:
 		"Ein Vault-Pfad pro Zeile. Der Auto-Modus bleibt in diesen Ordnern " +
@@ -115,11 +128,14 @@ const de: Strings = {
 const ru: Strings = {
 	cmdMoveCompleted: "Перенести выполненные задачи",
 	menuTaskStatus: "Статус задачи",
+	menuCompletionDate: "Дата выполнения",
+	menuRemoveDate: "Удалить дату",
 	noticeMoved: (moved, returned) => `Перенесено: ${moved}, возвращено: ${returned}.`,
 	noticeAutoMoved: (count) => `Автоматически перенесено выполненных задач: ${count}.`,
 	noticeNoCompleted: "Нечего переносить.",
 	headingMove: "Перенос выполненных задач",
 	headingStatusMenu: "Меню статуса",
+	headingDate: "Дата выполнения",
 	settingAutoModeName: "Автоперенос",
 	settingAutoModeDesc:
 		"Переносить полностью выполненные задачи автоматически, как только они " +
@@ -138,14 +154,16 @@ const ru: Strings = {
 		"«Из темы» ставит первыми символы закрытых задач, за ними символы, для которых есть стили в текущей теме и CSS-сниппетах.",
 	buttonFromTheme: "Из темы",
 	settingDateName: "Добавлять дату выполнения",
-	settingDateDesc: "Добавляет дату выполнения к каждой перенесённой закрытой задаче.",
+	settingDateDesc: "Добавляет дату выполнения по первому шаблону даты к каждой перенесённой закрытой задаче.",
 	settingDatePositionName: "Положение даты",
 	settingDatePositionDesc: "Куда ставить дату в строке задачи.",
 	datePositionStart: "В начале (после галочки)",
 	datePositionEnd: "В конце",
-	settingDateTemplateName: "Шаблон даты",
+	settingDateTemplateName: "Шаблоны даты",
 	settingDateTemplateDesc:
-		"Текст даты, «{date}» заменяется на ГГГГ-ММ-ДД, например «✅ {date}» или «[completion:: {date}]».",
+		"Один шаблон на строку. Формат даты пишется в фигурных скобках из YYYY, MM, DD, M и D, " +
+		"например «✅ {YYYY-MM-DD}» или «[{MM.YYYY}]». Первый шаблон используется при переносе, " +
+		"все шаблоны предлагает меню редактора в пункте «Дата выполнения».",
 	settingExcludedName: "Исключённые папки и файлы",
 	settingExcludedDesc:
 		"Один путь в хранилище на строку. Автоперенос не работает в этих папках " +

@@ -3,10 +3,11 @@ import type DoneMoverPlugin from "../main";
 import { calloutType } from "./taskParser";
 import { taskCharsFromCss } from "./taskChars";
 import { createStatusIcon, statusChars } from "./statusIcon";
+import { isDateTemplate, templateLines } from "./dateTemplate";
 import { DatePosition } from "./types";
 
 /** Marks a field whose input is not saved; styled in styles.css. */
-function markInvalid(input: HTMLInputElement, invalid: boolean) {
+function markInvalid(input: HTMLElement, invalid: boolean) {
 	input.setAttribute("aria-invalid", String(invalid));
 }
 
@@ -37,7 +38,7 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-	/** The date template when the tab was opened, to remember it once it changes. */
+	/** The first date template when the tab was opened, to remember it once it changes. */
 	private templateOnOpen = "";
 
 	display(): void {
@@ -45,7 +46,7 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 		const s = this.plugin.strings;
 		containerEl.empty();
 		containerEl.addClass("todo-manager-settings");
-		this.templateOnOpen = this.plugin.settings.dateTemplate;
+		this.templateOnOpen = templateLines(this.plugin.settings.dateTemplate)[0] ?? "";
 
 		new Setting(containerEl).setName(s.headingMove).setHeading();
 
@@ -101,12 +102,27 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.appendCompletionDate)
 					.onChange(async (value) => {
 						this.plugin.settings.appendCompletionDate = value;
-						dateChildren.forEach((el) => el.toggle(value));
 						await this.plugin.saveSettings();
 					})
 			);
 
-		const datePosition = new Setting(containerEl)
+		new Setting(containerEl)
+			.setName(s.settingExcludedName)
+			.setDesc(s.settingExcludedDesc)
+			.addTextArea((text) => {
+				text
+					.setPlaceholder("Templates\nArchiv/2025\nDaily/Scratch.md")
+					.setValue(this.plugin.settings.excludedPaths.join("\n"))
+					.onChange(async (value) => {
+						this.plugin.settings.excludedPaths = templateLines(value);
+						await this.plugin.saveSettings();
+					});
+				text.inputEl.rows = 4;
+			});
+
+		new Setting(containerEl).setName(s.headingDate).setHeading();
+
+		new Setting(containerEl)
 			.setName(s.settingDatePositionName)
 			.setDesc(s.settingDatePositionDesc)
 			.addDropdown((dropdown) =>
@@ -120,44 +136,23 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 					})
 			);
 
-		const dateTemplate = new Setting(containerEl)
+		new Setting(containerEl)
 			.setName(s.settingDateTemplateName)
 			.setDesc(s.settingDateTemplateDesc)
-			.addText((text) =>
-				text
-					.setPlaceholder("<small>[{date}]</small>")
-					.setValue(this.plugin.settings.dateTemplate)
-					.onChange(async (value) => {
-						// Only a template with "{date}" is saved; partial input is ignored.
-						markInvalid(text.inputEl, !value.includes("{date}"));
-						if (!value.includes("{date}")) return;
-						this.plugin.settings.dateTemplate = value.trim();
-						await this.plugin.saveSettings();
-					})
-			);
-
-		// Date options are shown as children of the date toggle and only while it is on.
-		const dateChildren = [datePosition.settingEl, dateTemplate.settingEl];
-		dateChildren.forEach((el) => {
-			el.addClass("todo-manager-child-setting");
-			el.toggle(this.plugin.settings.appendCompletionDate);
-		});
-
-		new Setting(containerEl)
-			.setName(s.settingExcludedName)
-			.setDesc(s.settingExcludedDesc)
 			.addTextArea((text) => {
 				text
-					.setPlaceholder("Templates\nArchiv/2025\nDaily/Scratch.md")
-					.setValue(this.plugin.settings.excludedPaths.join("\n"))
+					.setPlaceholder("<small>[{YYYY-MM-DD}]</small>\n[{MM.YYYY}]")
+					.setValue(this.plugin.settings.dateTemplate)
 					.onChange(async (value) => {
-						this.plugin.settings.excludedPaths = value
-							.split("\n")
-							.map((line) => line.trim())
-							.filter((line) => line.length > 0);
+						// Only templates with a date format are saved; partial input is ignored.
+						const lines = templateLines(value);
+						const valid = lines.length > 0 && lines.every(isDateTemplate);
+						markInvalid(text.inputEl, !valid);
+						if (!valid) return;
+						this.plugin.settings.dateTemplate = lines.join("\n");
 						await this.plugin.saveSettings();
 					});
-				text.inputEl.rows = 4;
+				text.inputEl.rows = 3;
 			});
 
 		new Setting(containerEl).setName(s.headingStatusMenu).setHeading();
@@ -190,7 +185,7 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 		super.hide();
 		const settings = this.plugin.settings;
 		const old = this.templateOnOpen;
-		if (!old || old === settings.dateTemplate || settings.oldDateTemplates.includes(old)) return;
+		if (!old || templateLines(settings.dateTemplate).includes(old) || settings.oldDateTemplates.includes(old)) return;
 		settings.oldDateTemplates = [...settings.oldDateTemplates, old];
 		void this.plugin.saveSettings();
 	}

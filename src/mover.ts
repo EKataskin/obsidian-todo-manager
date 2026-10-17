@@ -1,6 +1,7 @@
 // Pure task-moving logic — no Obsidian imports, fully unit-testable.
 
 import { MoveOptions, MoveResult, TaskBlock } from "./types";
+import { dateRegexSource, formatDate } from "./dateTemplate";
 import {
 	ParsedLine,
 	TASK_RE,
@@ -15,20 +16,15 @@ import {
 	unquote,
 } from "./taskParser";
 
-/**
- * Regex for a completion date written with the current or an old template
- * ("{date}" → YYYY-MM-DD).
- */
+/** Regex for a completion date written with the template or one of the other known ones. */
 function dateRegex(opts: MoveOptions): RegExp {
-	const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-	const one = (t: string) => t.split("{date}").map(escape).join("\\d{4}-\\d{2}-\\d{2}");
-	return new RegExp([opts.dateTemplate, ...opts.oldDateTemplates].map((t) => `(?:${one(t)})`).join("|"));
+	return new RegExp([opts.dateTemplate, ...opts.oldDateTemplates].map((t) => `(?:${dateRegexSource(t)})`).join("|"));
 }
 
 /** Adds the templated date to closed task lines that do not yet have one. */
 function addDateToBlock(blockLines: string[], opts: MoveOptions): string[] {
 	const re = dateRegex(opts);
-	const stamp = opts.dateTemplate.split("{date}").join(opts.today);
+	const stamp = formatDate(opts.dateTemplate, opts.today);
 	return blockLines.map((line) => {
 		const m = line.match(TASK_RE);
 		if (!m) return line;

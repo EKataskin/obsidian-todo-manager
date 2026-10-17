@@ -48,10 +48,29 @@ German or Russian when Obsidian is set to one of them.
 - The callout is found by its type (`[!done]` by default), so changing the
   header text later does not lose existing blocks.
 
-- A completion date is recognized when it matches the current date template
-  or one used before: when the template changes, the old one is remembered
-  as the settings window closes. Such dates are not added twice and are
-  removed on moving back.
+- With *Append completion date* on, moved closed tasks get today's date by
+  the first line of *Date templates*.
+- A completion date is recognized when it matches any line of *Date
+  templates* or a first template used before: when the first line changes,
+  the old one is remembered as the settings window closes. Such dates are
+  not added twice and are removed on moving back.
+
+## Completion date
+
+- *Date templates* holds one template per line. The date format goes in
+  braces and is made of `YYYY`, `MM`, `DD`, `M` and `D` (`M` and `D` without
+  a leading zero), e.g. `<small>[{YYYY-MM-DD}]</small>` or `[{MM.YYYY}]`.
+  Text outside the braces stays as it is.
+- The first template is used when tasks are moved. All of them are offered
+  in the editor's right-click menu under *Completion date*, each already
+  filled with today's date.
+- Choosing a template puts the date into the task in the cursor's line, or
+  into every task in the selection, with any status. A date written with
+  the same template is replaced where it stands. Otherwise the date goes
+  where *Date position* says. For another date, edit it after inserting.
+- *Remove date* at the end of the submenu removes the dates of every
+  template and of the first templates used before. It is shown only when
+  one of the tasks has such a date.
 
 ## Status menu
 
@@ -83,16 +102,16 @@ German or Russian when Obsidian is set to one of them.
 | Auto mode | Move completed tasks automatically after checking (never moves them back) | off |
 | Done block header | First line of the callout, must look like `> [!type]...` | `> [!done]- Done` |
 | Closed task characters | Characters in the brackets that mark a task as closed; any other character means open | `xX-` |
-| Append completion date | Add the completion date to moved, closed task lines | on |
-| Date position | At the start (after the checkbox) or at the end of the line | end |
-| Date template | Text of the date, `{date}` becomes `YYYY-MM-DD` | `<small>[{date}]</small>` |
+| Append completion date | Add the completion date by the first date template to moved, closed task lines | on |
 | Excluded folders/files | Vault paths (one per line) where auto mode stays inactive | empty |
+| Date position | At the start (after the checkbox) or at the end of the line | end |
+| Date templates | One per line, the date format in braces; the first is used for moved tasks, all are offered in the menu | `<small>[{YYYY-MM-DD}]</small>`, `[{MM.YYYY}]` |
 | Status characters | Characters offered in the *Task status* menu after the open status | `xX-><!/?*nliISpcb"udwkf` (AnuPpuccin) |
 
 ## Styling the completion date
 
 The plugin ships no styles for the date. With the default template
-(`<small>[{date}]</small>`) the date is already smaller, but Obsidian strikes
+(`<small>[{YYYY-MM-DD}]</small>`) the date is already smaller, but Obsidian strikes
 it through together with the rest of a checked task. To change that, save a
 CSS snippet, e.g. `.obsidian/snippets/task-date.css`, and enable it under
 *Settings → Appearance → CSS snippets*:
@@ -154,12 +173,13 @@ Copy `main.js`, `manifest.json` and `styles.css` into
 | `src/settings.ts` | Settings UI |
 | `src/taskChars.ts` | Status chars: reading them from CSS, changing them in a line |
 | `src/statusIcon.ts` | Checkbox icon of a status, for the menu and the settings |
+| `src/dateTemplate.ts` | Date templates: filling, recognizing, putting a date into a line |
 | `src/exclusions.ts` | Path-exclusion matching for auto mode |
 | `src/i18n.ts` | UI strings (English / German / Russian) |
 | `src/types.ts` | Shared types and defaults |
 | `src/*.test.ts` | Unit tests |
 
-`taskParser.ts`, `mover.ts`, `taskChars.ts` and `exclusions.ts` have no Obsidian dependencies,
+`taskParser.ts`, `mover.ts`, `taskChars.ts`, `dateTemplate.ts` and `exclusions.ts` have no Obsidian dependencies,
 so they are unit-testable without a running Obsidian instance.
 
 ## License

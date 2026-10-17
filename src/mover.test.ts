@@ -10,7 +10,7 @@ const OPTS: MoveOptions = {
 	oldDateTemplates: [],
 	closedChars: "xX-",
 	returnUnchecked: false,
-	today: "2026-10-17",
+	today: new Date(2026, 9, 17),
 };
 
 function run(lines: string[], extra: Partial<MoveOptions> = {}) {
@@ -54,6 +54,17 @@ describe("moveCompletedTasks", () => {
 	it("puts the date from the template at the end of the line", () => {
 		const r = run(["## A", "- [x] a"], { appendDate: true, dateTemplate: "({date})" });
 		expect(r.text).toContain("> - [x] a (2026-10-17)");
+	});
+
+	it("fills the date format of the template", () => {
+		const r = run(["## A", "- [x] a"], { appendDate: true, dateTemplate: "[{MM.YYYY}]" });
+		expect(r.text).toContain("> - [x] a [10.2026]");
+	});
+
+	it("does not add a second date when a date of a formatted template is there", () => {
+		const r = run(["## A", "- [x] a [06.2025]"], { appendDate: true, dateTemplate: "({date})", oldDateTemplates: ["[{MM.YYYY}]"] });
+		expect(r.text).toContain("> - [x] a [06.2025]");
+		expect(r.text).not.toContain("2026-10-17");
 	});
 
 	it("does not add a second date when the template date is already there", () => {

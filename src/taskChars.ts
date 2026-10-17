@@ -26,7 +26,7 @@ export function taskCharsFromCss(css: string, first: string): string {
 }
 
 /** A task line, also inside a callout: prefix up to "[", the status char, then "]". */
-const STATUS_RE = /^((?:\s*>)*\s*(?:[-*+]|\d+[.)]) \[).(?=\](?:\s|$))/;
+export const STATUS_RE = /^((?:\s*>)*\s*(?:[-*+]|\d+[.)]) \[).(?=\](?:\s|$))/;
 
 /** The status char of a task line, or null when the line is not a task. */
 export function taskStatus(line: string): string | null {

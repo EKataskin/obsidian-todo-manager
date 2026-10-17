@@ -1,4 +1,4 @@
-import { Editor, MarkdownFileInfo, MarkdownView, Menu, MenuItem, Notice, Plugin, TFile, moment } from "obsidian";
+import { Editor, MarkdownFileInfo, MarkdownView, Menu, MenuItem, Notice, Plugin, TFile, moment, sanitizeHTMLToDom } from "obsidian";
 import { DEFAULT_SETTINGS, DoneMoverSettings, MoveOptions, MoveResult } from "./src/types";
 import { DoneMoverSettingTab } from "./src/settings";
 import { changedRange, moveCompletedTasks } from "./src/mover";
@@ -6,6 +6,7 @@ import { calloutType } from "./src/taskParser";
 import { isPathExcluded } from "./src/exclusions";
 import { setTaskStatus, taskStatus } from "./src/taskChars";
 import { createStatusIcon, statusChars } from "./src/statusIcon";
+import { formatDate, isDateTemplate, removeDates, setDateStamp, templateLines } from "./src/dateTemplate";
 import { Lang, Strings, getStrings } from "./src/i18n";
 
 /** Delay before the auto mode reacts, so it does not interrupt typing. */
@@ -20,13 +21,6 @@ function detectLang(): Lang {
 	if (locale.startsWith("de")) return "de";
 	if (locale.startsWith("ru")) return "ru";
 	return "en";
-}
-
-/** Returns today's local date as YYYY-MM-DD. */
-function formatToday(): string {
-	const d = new Date();
-	const pad = (n: number) => String(n).padStart(2, "0");
-	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 export default class DoneMoverPlugin extends Plugin {
@@ -59,7 +53,11 @@ export default class DoneMoverPlugin extends Plugin {
 						.setIcon("check-check")
 						.onClick(() => this.runMoveCompleted(editor))
 				);
-				this.addStatusMenu(menu, editor);
+				const lines = this.taskLines(editor);
+				if (lines.length > 0) {
+					this.addStatusMenu(menu, editor, lines);
+					this.addDateMenu(menu, editor, lines);
+				}
 			})
 		);
 
@@ -96,7 +94,18 @@ export default class DoneMoverPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
+	/** The valid lines of the date templates setting. */
+	private dateTemplates(): string[] {
+		return templateLines(this.settings.dateTemplate).filter(isDateTemplate);
+	}
+
+	/** Earlier first templates; one without a date format would match every line. */
+	private oldDateTemplates(): string[] {
+		return this.settings.oldDateTemplates.filter(isDateTemplate);
+	}
+
 	private moveOptions(returnUnchecked: boolean): MoveOptions {
+		const templates = this.dateTemplates();
 		return {
 			calloutHeader:
 				calloutType(this.settings.calloutHeader) !== null
@@ -104,14 +113,12 @@ export default class DoneMoverPlugin extends Plugin {
 					: DEFAULT_SETTINGS.calloutHeader,
 			appendDate: this.settings.appendCompletionDate,
 			datePosition: this.settings.datePosition,
-			dateTemplate: this.settings.dateTemplate.includes("{date}")
-				? this.settings.dateTemplate
-				: DEFAULT_SETTINGS.dateTemplate,
-			// An entry without "{date}" would match every line.
-			oldDateTemplates: this.settings.oldDateTemplates.filter((t) => t.includes("{date}")),
+			// The first template adds dates, the others are only recognized.
+			dateTemplate: templates[0] ?? templateLines(DEFAULT_SETTINGS.dateTemplate)[0],
+			oldDateTemplates: [...templates.slice(1), ...this.oldDateTemplates()],
 			closedChars: this.settings.closedChars || DEFAULT_SETTINGS.closedChars,
 			returnUnchecked,
-			today: formatToday(),
+			today: new Date(),
 		};
 	}
 
@@ -144,30 +151,84 @@ export default class DoneMoverPlugin extends Plugin {
 		return null;
 	}
 
-	/** "Task status" with one item per status char, for the tasks in the cursor's line or the selection. */
-	private addStatusMenu(menu: Menu, editor: Editor) {
+	/** Task lines in the cursor's line or the selection. */
+	private taskLines(editor: Editor): number[] {
 		const from = editor.getCursor("from");
 		const to = editor.getCursor("to");
 		// A selection that ends at the start of a line does not take that line.
 		const last = to.line > from.line && to.ch === 0 ? to.line - 1 : to.line;
 		const lines: number[] = [];
-		const current = new Set<string>();
 		for (let i = from.line; i <= last; i++) {
-			const status = taskStatus(editor.getLine(i));
-			if (status === null) continue;
-			lines.push(i);
-			current.add(status);
+			if (taskStatus(editor.getLine(i)) !== null) lines.push(i);
 		}
-		if (lines.length === 0) return;
+		return lines;
+	}
 
+	/** Rewrites the lines in one transaction, so one undo step. */
+	private changeLines(editor: Editor, lines: number[], change: (text: string) => string) {
+		editor.transaction({
+			changes: lines.map((line) => {
+				const text = editor.getLine(line);
+				return { from: { line, ch: 0 }, to: { line, ch: text.length }, text: change(text) };
+			}),
+		});
+	}
+
+	/** A menu item with a submenu; without submenus the items go right into the menu. */
+	private addSubmenu(menu: Menu, title: string, icon: string): { submenu: Menu | undefined; target: Menu } {
 		let submenu: Menu | undefined;
 		menu.addItem((item) => {
-			item.setTitle(this.strings.menuTaskStatus).setIcon("square-check");
-			// Submenus are not in the public API; without them the items go right into the menu.
+			item.setTitle(title).setIcon(icon);
+			// Submenus are not in the public API.
 			submenu = (item as MenuItem & { setSubmenu?: () => Menu }).setSubmenu?.();
 		});
+		return { submenu, target: submenu ?? menu };
+	}
+
+	/**
+	 * "Completion date" with one item per date template, filled with today's
+	 * date, and "Remove date" when a line has a date of any known template.
+	 */
+	private addDateMenu(menu: Menu, editor: Editor, lines: number[]) {
+		const templates = this.dateTemplates();
+		if (templates.length === 0) return;
+		const today = new Date();
+		const known = [...templates, ...this.oldDateTemplates()];
+		const removable = lines.some((line) => {
+			const text = editor.getLine(line);
+			return removeDates(text, known) !== text;
+		});
+		const { target } = this.addSubmenu(menu, this.strings.menuCompletionDate, "calendar-check");
+		for (const template of templates) {
+			target.addItem((item) =>
+				item
+					// HTML of the template is shown as it looks in the note, e.g. <small>.
+					.setTitle(sanitizeHTMLToDom(formatDate(template, today)))
+					.onClick(() =>
+						this.changeLines(
+							editor,
+							lines,
+							(text) => setDateStamp(text, template, today, this.settings.datePosition) ?? text
+						)
+					)
+			);
+		}
+		if (!removable) return;
+		target.addSeparator();
+		target.addItem((item) =>
+			item
+				.setTitle(this.strings.menuRemoveDate)
+				.setIcon("calendar-x")
+				.onClick(() => this.changeLines(editor, lines, (text) => removeDates(text, known) ?? text))
+		);
+	}
+
+	/** "Task status" with one item per status char. */
+	private addStatusMenu(menu: Menu, editor: Editor, lines: number[]) {
+		const current = new Set(lines.map((line) => taskStatus(editor.getLine(line))));
+		const { submenu, target } = this.addSubmenu(menu, this.strings.menuTaskStatus, "square-check");
 		for (const char of statusChars(this.settings.menuChars)) {
-			(submenu ?? menu).addItem((item) =>
+			target.addItem((item) =>
 				item
 					// "mod-columns" lays out the submenu in columns, "is-current" marks the
 					// current status with a background; see styles.css.
@@ -178,19 +239,7 @@ export default class DoneMoverPlugin extends Plugin {
 							icon.toggleClass("is-current", current.size === 1 && current.has(char));
 						})
 					)
-					.onClick(() =>
-						// One transaction, so one undo step.
-						editor.transaction({
-							changes: lines.map((line) => {
-								const text = editor.getLine(line);
-								return {
-									from: { line, ch: 0 },
-									to: { line, ch: text.length },
-									text: setTaskStatus(text, char) ?? text,
-								};
-							}),
-						})
-					)
+					.onClick(() => this.changeLines(editor, lines, (text) => setTaskStatus(text, char) ?? text))
 			);
 		}
 	}
