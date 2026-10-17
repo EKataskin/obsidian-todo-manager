@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDate, dateRegexSource, formatDate, isDateTemplate, removeDates, setDateStamp } from "./dateTemplate";
+import { addDate, dateRegexSource, removeFirstDate, formatDate, isDateTemplate, removeDates, setDateStamp } from "./dateTemplate";
 
 const DAY = new Date(2026, 9, 7);
 
@@ -90,5 +90,14 @@ describe("addDate", () => {
 	it("adds a date even when one of the same template is there", () => {
 		expect(addDate("- [x] a [09.2026]", "[{MM.YYYY}]", DAY, "end")).toBe("- [x] a [09.2026] [10.2026]");
 		expect(addDate("- [x] a", "[{MM.YYYY}]", DAY, "start")).toBe("- [x] [10.2026] a");
+	});
+});
+
+describe("removeFirstDate", () => {
+	it("removes one date of the first template that matches", () => {
+		const templates = ["[{MM.YYYY}]", "<small>[{YYYY-MM-DD}]</small>"];
+		expect(removeFirstDate("- [x] a <small>[2026-10-07]</small> [09.2026]", templates)).toBe("- [x] a <small>[2026-10-07]</small>");
+		expect(removeFirstDate("- [x] [2026-10-07] a", ["[{YYYY-MM-DD}]"])).toBe("- [x] a");
+		expect(removeFirstDate("- [x] a", templates)).toBe("- [x] a");
 	});
 });

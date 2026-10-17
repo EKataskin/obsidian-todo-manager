@@ -116,6 +116,12 @@ German or Russian when Obsidian is set to one of them.
 - A moved task with an open status character, e.g. `/`, goes back to the
   list on the next *Move completed tasks*, as any open task in the done
   block does.
+- *Undo completion* at the end of the submenu puts the open status
+  (`- [ ]`), removes one date and returns the task from the done block,
+  if it is there, to the end of its list. The date is looked for by the
+  lines of *Date templates*, then by the date templates of the complete
+  templates; the first one that matches wins. Other tasks stay where they
+  are.
 
 ## Settings
 

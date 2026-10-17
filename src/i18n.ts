@@ -10,6 +10,7 @@ export interface Strings {
 	menuRemoveDate: string;
 	menuCompleteByTemplate: string;
 	completeDefaultName: string;
+	menuUndoCompletion: string;
 	noticeMoved: (moved: number, returned: number) => string;
 	noticeAutoMoved: (count: number) => string;
 	noticeNoCompleted: string;
@@ -55,6 +56,7 @@ const en: Strings = {
 	menuRemoveDate: "Remove date",
 	menuCompleteByTemplate: "Complete by template",
 	completeDefaultName: "Done",
+	menuUndoCompletion: "Undo completion",
 	noticeMoved: (moved, returned) => `Moved: ${moved}, returned: ${returned}.`,
 	noticeAutoMoved: (count) => `Automatically moved ${count} completed task(s).`,
 	noticeNoCompleted: "Nothing to move.",
@@ -115,6 +117,7 @@ const de: Strings = {
 	menuRemoveDate: "Datum entfernen",
 	menuCompleteByTemplate: "Nach Vorlage erledigen",
 	completeDefaultName: "Erledigt",
+	menuUndoCompletion: "Erledigung zurücknehmen",
 	noticeMoved: (moved, returned) => `Verschoben: ${moved}, zurückgeholt: ${returned}.`,
 	noticeAutoMoved: (count) => `${count} erledigte Aufgabe(n) automatisch verschoben.`,
 	noticeNoCompleted: "Nichts zu verschieben.",
@@ -175,6 +178,7 @@ const ru: Strings = {
 	menuRemoveDate: "Удалить дату",
 	menuCompleteByTemplate: "Выполнить по шаблону",
 	completeDefaultName: "Выполнено",
+	menuUndoCompletion: "Снять выполнение",
 	noticeMoved: (moved, returned) => `Перенесено: ${moved}, возвращено: ${returned}.`,
 	noticeAutoMoved: (count) => `Автоматически перенесено выполненных задач: ${count}.`,
 	noticeNoCompleted: "Нечего переносить.",

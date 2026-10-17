@@ -7,7 +7,7 @@ import { isPathExcluded } from "./src/exclusions";
 import { setTaskStatus, taskStatus } from "./src/taskChars";
 import { createStatusIcon, statusChars } from "./src/statusIcon";
 import { formatDate, isDateTemplate, removeDates, setDateStamp, templateLines } from "./src/dateTemplate";
-import { applyCompleteTemplate } from "./src/completeTemplate";
+import { applyCompleteTemplate, undoCompletion } from "./src/completeTemplate";
 import { Lang, Strings, getStrings } from "./src/i18n";
 
 /** Delay before the auto mode reacts, so it does not interrupt typing. */
@@ -243,25 +243,41 @@ export default class DoneMoverPlugin extends Plugin {
 		};
 	}
 
-	/** "Complete by template" with the built-in template first, then the ones of the settings. */
+	/**
+	 * "Complete by template" with the built-in template first, then the ones of
+	 * the settings, and the undo of a completion last.
+	 */
 	private addCompleteMenu(menu: Menu, editor: Editor, lines: number[]) {
 		const templates = [this.defaultTemplate(), ...this.settings.completeTemplates.filter((t) => t.name && t.char)];
 		const { target } = this.addSubmenu(menu, this.strings.menuCompleteByTemplate, "list-checks");
+		// The status icon, then the name.
+		const title = (char: string, name: string) =>
+			createFragment((el) => {
+				const span = el.createSpan("todo-manager-template-item");
+				createStatusIcon(span, char, false);
+				span.createSpan({ text: name });
+			});
 		for (const template of templates) {
 			target.addItem((item) =>
 				item
-					.setTitle(
-						createFragment((el) => {
-							const span = el.createSpan("todo-manager-template-item");
-							createStatusIcon(span, template.char, false);
-							span.createSpan({ text: template.name });
-						})
-					)
+					.setTitle(title(template.char, template.name))
 					.onClick(() =>
 						this.replaceText(editor, applyCompleteTemplate(editor.getValue(), lines, template, this.moveOptions(false)))
 					)
 			);
 		}
+		// The date is looked for by the date templates, then by those of the complete templates.
+		const dateTemplates = [
+			...new Set([...this.dateTemplates(), ...this.settings.completeTemplates.map((t) => t.dateTemplate).filter(isDateTemplate)]),
+		];
+		target.addSeparator();
+		target.addItem((item) =>
+			item
+				.setTitle(title(" ", this.strings.menuUndoCompletion))
+				.onClick(() =>
+					this.replaceText(editor, undoCompletion(editor.getValue(), lines, dateTemplates, this.moveOptions(true)))
+				)
+		);
 	}
 
 	/** "Task status" with one item per status char. */

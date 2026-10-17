@@ -73,6 +73,8 @@ export interface MoveOptions {
 	 * in it moves when it is fully done.
 	 */
 	moveLines?: ReadonlySet<number>;
+	/** When set, only the callout blocks with one of these line indices return. */
+	returnLines?: ReadonlySet<number>;
 }
 
 export interface MoveResult {

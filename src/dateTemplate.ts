@@ -55,6 +55,15 @@ export function removeDates(line: string, templates: string[]): string | null {
 	return line.replace(re, "");
 }
 
+/** The line without the first date found, trying the templates in order. */
+export function removeFirstDate(line: string, templates: string[]): string {
+	for (const template of templates) {
+		const re = new RegExp(`\\s*(?:${dateRegexSource(template)})`);
+		if (re.test(line)) return line.replace(re, "");
+	}
+	return line;
+}
+
 /**
  * The task line with today's date by the template: in place of a date of the
  * same template, else after the checkbox or at the end. Null when the line is

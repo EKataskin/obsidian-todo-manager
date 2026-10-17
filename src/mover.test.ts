@@ -304,3 +304,10 @@ describe("changedRange", () => {
 		expect(changedRange(before, after).from).toBeGreaterThanOrEqual("## A\n".length);
 	});
 });
+
+describe("moveCompletedTasks with returnLines", () => {
+	it("returns only the callout blocks of the lines", () => {
+		const r = run(["## A", "", "> [!done]- X", "> - [ ] a", "> - [ ] b"], { returnUnchecked: true, returnLines: new Set([4]) });
+		expect(r.text).toBe(["## A", "- [ ] b", "", "> [!done]- X", "> - [ ] a"].join("\n"));
+	});
+});

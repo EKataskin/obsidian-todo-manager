@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyCompleteTemplate } from "./completeTemplate";
+import { applyCompleteTemplate, undoCompletion } from "./completeTemplate";
 import { CompleteTemplate, MoveOptions } from "./types";
 
 const OPTS: MoveOptions = {
@@ -36,5 +36,20 @@ describe("applyCompleteTemplate", () => {
 
 	it("changes tasks inside the done block in place", () => {
 		expect(apply(["> [!done]- Done", "> - [x] a"], [1], { char: "-" })).toEqual(["> [!done]- Done", "> - [-] a [10.2026]"]);
+	});
+});
+
+describe("undoCompletion", () => {
+	const undo = (lines: string[], changed: number[]) =>
+		undoCompletion(lines.join("\n"), changed, ["✅ {YYYY-MM-DD}", "[{MM.YYYY}]"], OPTS).split("\n");
+
+	it("opens the task, removes its date and returns only it from the done block", () => {
+		expect(undo(["## A", "- [ ] a", "", "> [!done]- Done", "> - [x] b [10.2026]", "> - [x] c [10.2026]"], [4])).toEqual([
+			"## A", "- [ ] a", "- [ ] b", "", "> [!done]- Done", "> - [x] c [10.2026]",
+		]);
+	});
+
+	it("leaves a task in the list in place and does not move other tasks", () => {
+		expect(undo(["- [x] a ✅ 2026-10-07", "- [x] b"], [0])).toEqual(["- [ ] a", "- [x] b"]);
 	});
 });

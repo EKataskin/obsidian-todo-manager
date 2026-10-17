@@ -75,6 +75,12 @@ function hasUncheckedTask(parsed: ParsedLine[], block: TaskBlock): boolean {
 	return false;
 }
 
+/** True when one of the lines from `start` to `end` is in the set. */
+function hasLine(lines: ReadonlySet<number>, start: number, end: number): boolean {
+	for (let i = start; i <= end; i++) if (lines.has(i)) return true;
+	return false;
+}
+
 /** True when the block moves: see MoveOptions.moveLines. `offset` is the section's first line. */
 function shouldMove(parsed: ParsedLine[], block: TaskBlock, offset: number, opts: MoveOptions): boolean {
 	const only = opts.moveLines;
@@ -126,6 +132,7 @@ function processSection(
 		const innerParsed = parseLines(inner, opts.closedChars);
 		for (const b of topLevelBlocks(inner, innerParsed)) {
 			if (!hasUncheckedTask(innerParsed, b)) continue;
+			if (opts.returnLines && !hasLine(opts.returnLines, offset + bodyStart + b.start, offset + bodyStart + b.end)) continue;
 			for (let i = b.start; i <= b.end; i++) removed.add(bodyStart + i);
 			returnedLines.push(...stripDateFromOpen(dedent(inner.slice(b.start, b.end + 1)), opts));
 			returned++;
