@@ -1,5 +1,5 @@
-/** A task checkbox with `char` as its status, drawn by the theme's styles, and the char itself. */
-export function createStatusIcon(parent: Node, char: string): HTMLElement {
+/** A task checkbox with `char` as its status, drawn by the theme's styles, and with `showChar` the char itself. */
+export function createStatusIcon(parent: Node, char: string, showChar = true): HTMLElement {
 	const item = parent.createSpan("todo-manager-status-item");
 	const box = item.createEl("input", {
 		type: "checkbox",
@@ -7,7 +7,7 @@ export function createStatusIcon(parent: Node, char: string): HTMLElement {
 		attr: { "data-task": char, tabindex: "-1" },
 	});
 	box.checked = char !== " ";
-	item.createSpan({ text: char === " " ? "␣" : char });
+	if (showChar) item.createSpan({ text: char === " " ? "␣" : char });
 	return item;
 }
 

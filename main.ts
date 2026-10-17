@@ -253,7 +253,7 @@ export default class DoneMoverPlugin extends Plugin {
 					.setTitle(
 						createFragment((el) => {
 							const span = el.createSpan("todo-manager-template-item");
-							createStatusIcon(span, template.char);
+							createStatusIcon(span, template.char, false);
 							span.createSpan({ text: template.name });
 						})
 					)
