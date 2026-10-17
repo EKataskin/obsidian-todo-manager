@@ -242,7 +242,6 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 			.setDesc(s.settingTemplateDateDesc)
 			.addText((text) =>
 				text
-					.setPlaceholder("[{MM.YYYY}]")
 					.setValue(template.dateTemplate)
 					.onChange(async (value) => {
 						const date = value.trim();
