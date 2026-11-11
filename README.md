@@ -48,8 +48,10 @@ German or Russian when Obsidian is set to one of them.
 - The callout is found by its type (`[!done]` by default), so changing the
   header text later does not lose existing blocks.
 
-- With *Append completion date* on, moved closed tasks get today's date by
-  the first line of *Date templates*.
+- *Move completed tasks with date* does the same and also adds today's date
+  by the first line of *Date templates* to moved closed tasks. *Move
+  completed tasks* and auto mode move them without a date. Both commands
+  are in the same places.
 - A completion date is recognized when it matches any line of *Date
   templates*. Such dates are not added twice and are removed on moving
   back. A date written with a template that is no longer in the list is
@@ -103,8 +105,7 @@ German or Russian when Obsidian is set to one of them.
   the done block. One undo reverts all of it.
 - *Done* always comes first. It is made of the general settings: it puts
   `x` (as a click in Reading view does), adds the date by the first date
-  template when *Append completion date* is on, puts it where *Date
-  position* says, and moves the task.
+  template, puts it where *Date position* says, and moves the task.
 - Your own templates follow, from *Complete templates* in the settings.
   Each has a name, a status character, a date template (empty means no
   date), a date position and *Move to the done block*. The arrows next
@@ -131,7 +132,6 @@ German or Russian when Obsidian is set to one of them.
 | Auto mode | Move completed tasks automatically after checking (never moves them back) | off |
 | Done block header | First line of the callout, must look like `> [!type]...` | `> [!done]- Done` |
 | Closed task characters | Characters in the brackets that mark a task as closed; any other character means open | `xX-` |
-| Append completion date | Add the completion date by the first date template to moved, closed task lines | on |
 | Excluded folders/files | Vault paths (one per line) where auto mode stays inactive | empty |
 | Date position | At the start (after the checkbox) or at the end of the line | end |
 | Date templates | One per line, the date format in braces; the first is used for moved tasks, all are offered in the menu | `<small>[{YYYY-MM-DD}]</small>`, `[{MM.YYYY}]` |

@@ -91,18 +91,6 @@ export class DoneMoverSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName(s.settingDateName)
-			.setDesc(s.settingDateDesc)
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.appendCompletionDate)
-					.onChange(async (value) => {
-						this.plugin.settings.appendCompletionDate = value;
-						await this.plugin.saveSettings();
-					})
-			);
-
-		new Setting(containerEl)
 			.setName(s.settingExcludedName)
 			.setDesc(s.settingExcludedDesc)
 			.addTextArea((text) => {

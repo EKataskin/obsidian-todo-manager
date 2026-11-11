@@ -5,6 +5,7 @@ export type Lang = "en" | "de" | "ru";
 
 export interface Strings {
 	cmdMoveCompleted: string;
+	cmdMoveCompletedWithDate: string;
 	menuTaskStatus: string;
 	menuCompletionDate: string;
 	menuRemoveDate: string;
@@ -39,8 +40,6 @@ export interface Strings {
 	settingMenuCharsName: string;
 	settingMenuCharsDesc: string;
 	buttonFromTheme: string;
-	settingDateName: string;
-	settingDateDesc: string;
 	settingDatePositionName: string;
 	settingDatePositionDesc: string;
 	datePositionStart: string;
@@ -53,6 +52,7 @@ export interface Strings {
 
 const en: Strings = {
 	cmdMoveCompleted: "Move completed tasks",
+	cmdMoveCompletedWithDate: "Move completed tasks with date",
 	menuTaskStatus: "Task status",
 	menuCompletionDate: "Completion date",
 	menuRemoveDate: "Remove date",
@@ -97,8 +97,6 @@ const en: Strings = {
 		'Characters offered in the editor menu to set the task status, in this order. The open status is always offered first. ' +
 		'"From theme" puts the closed task characters first, then the characters styled by the current theme and CSS snippets.',
 	buttonFromTheme: "From theme",
-	settingDateName: "Append completion date",
-	settingDateDesc: "Adds the completion date by the first date template to every moved, closed task line.",
 	settingDatePositionName: "Date position",
 	settingDatePositionDesc: "Where the date goes in the task line.",
 	datePositionStart: "At the start (after the checkbox)",
@@ -116,6 +114,7 @@ const en: Strings = {
 
 const de: Strings = {
 	cmdMoveCompleted: "Erledigte Aufgaben verschieben",
+	cmdMoveCompletedWithDate: "Erledigte Aufgaben mit Datum verschieben",
 	menuTaskStatus: "Aufgabenstatus",
 	menuCompletionDate: "Erledigt-Datum",
 	menuRemoveDate: "Datum entfernen",
@@ -160,8 +159,6 @@ const de: Strings = {
 		"Zeichen, die im Editor-Menü zum Setzen des Aufgabenstatus angeboten werden, in dieser Reihenfolge. Der offene Status wird immer als Erstes angeboten. " +
 		"„Aus dem Theme\" setzt die Zeichen für abgeschlossene Aufgaben an den Anfang, danach die Zeichen, die das aktuelle Theme und die CSS-Snippets gestalten.",
 	buttonFromTheme: "Aus dem Theme",
-	settingDateName: "Erledigt-Datum anhängen",
-	settingDateDesc: "Fügt jeder verschobenen, abgeschlossenen Aufgabe das Erledigt-Datum nach der ersten Datumsvorlage hinzu.",
 	settingDatePositionName: "Position des Datums",
 	settingDatePositionDesc: "Wo das Datum in der Aufgabenzeile steht.",
 	datePositionStart: "Am Anfang (nach dem Kontrollkästchen)",
@@ -179,6 +176,7 @@ const de: Strings = {
 
 const ru: Strings = {
 	cmdMoveCompleted: "Перенести выполненные задачи",
+	cmdMoveCompletedWithDate: "Перенести выполненные задачи с датой",
 	menuTaskStatus: "Статус задачи",
 	menuCompletionDate: "Дата выполнения",
 	menuRemoveDate: "Удалить дату",
@@ -223,8 +221,6 @@ const ru: Strings = {
 		"Символы, которые меню редактора предлагает для статуса задачи, в этом порядке. Открытый статус предлагается всегда, первым. " +
 		"«Из темы» ставит первыми символы закрытых задач, за ними символы, для которых есть стили в текущей теме и CSS-сниппетах.",
 	buttonFromTheme: "Из темы",
-	settingDateName: "Добавлять дату выполнения",
-	settingDateDesc: "Добавляет дату выполнения по первому шаблону даты к каждой перенесённой закрытой задаче.",
 	settingDatePositionName: "Положение даты",
 	settingDatePositionDesc: "Куда ставить дату в строке задачи.",
 	datePositionStart: "В начале (после галочки)",

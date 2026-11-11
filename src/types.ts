@@ -5,8 +5,6 @@ export interface DoneMoverSettings {
 	autoMode: boolean;
 	/** First line of the callout that collects completed tasks (e.g. "> [!done]- Done"). */
 	calloutHeader: string;
-	/** When on, a completion date is added to moved checked lines. */
-	appendCompletionDate: boolean;
 	/** Where the date goes: right after the checkbox or at the end of the line. */
 	datePosition: DatePosition;
 	/**
@@ -27,7 +25,6 @@ export interface DoneMoverSettings {
 export const DEFAULT_SETTINGS: DoneMoverSettings = {
 	autoMode: false,
 	calloutHeader: "> [!done]- Done",
-	appendCompletionDate: true,
 	datePosition: "end",
 	dateTemplate: "<small>[{YYYY-MM-DD}]</small>\n[{MM.YYYY}]",
 	closedChars: "xX-",

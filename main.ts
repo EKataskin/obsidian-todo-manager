@@ -34,26 +34,36 @@ export default class DoneMoverPlugin extends Plugin {
 		await this.loadSettings();
 		this.addSettingTab(new DoneMoverSettingTab(this.app, this));
 
+		// Each move comes without and with the completion date.
+		const moves = [
+			{ id: "move-completed-tasks", title: this.strings.cmdMoveCompleted, withDate: false },
+			{ id: "move-completed-tasks-with-date", title: this.strings.cmdMoveCompletedWithDate, withDate: true },
+		];
+
 		// Works in any view mode: through the editor when one is open, else on the file.
-		this.addCommand({
-			id: "move-completed-tasks",
-			name: this.strings.cmdMoveCompleted,
-			checkCallback: (checking) => {
-				const file = this.app.workspace.getActiveFile();
-				if (!file || file.extension !== "md") return false;
-				if (!checking) void this.runOnFile(file);
-				return true;
-			},
-		});
+		for (const move of moves) {
+			this.addCommand({
+				id: move.id,
+				name: move.title,
+				checkCallback: (checking) => {
+					const file = this.app.workspace.getActiveFile();
+					if (!file || file.extension !== "md") return false;
+					if (!checking) void this.runOnFile(file, move.withDate);
+					return true;
+				},
+			});
+		}
 
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu, editor, info) => {
-				menu.addItem((item) =>
-					item
-						.setTitle(this.strings.cmdMoveCompleted)
-						.setIcon("check-check")
-						.onClick(() => this.runMoveCompleted(editor))
-				);
+				for (const move of moves) {
+					menu.addItem((item) =>
+						item
+							.setTitle(move.title)
+							.setIcon("check-check")
+							.onClick(() => this.runMoveCompleted(editor, move.withDate))
+					);
+				}
 				const lines = this.taskLines(editor);
 				if (lines.length > 0) {
 					this.addStatusMenu(menu, editor, lines);
@@ -68,12 +78,14 @@ export default class DoneMoverPlugin extends Plugin {
 			this.app.workspace.on("file-menu", (menu, file, source) => {
 				if (source === "file-explorer-context-menu") return;
 				if (!(file instanceof TFile) || file.extension !== "md") return;
-				menu.addItem((item) =>
-					item
-						.setTitle(this.strings.cmdMoveCompleted)
-						.setIcon("check-check")
-						.onClick(() => this.runOnFile(file))
-				);
+				for (const move of moves) {
+					menu.addItem((item) =>
+						item
+							.setTitle(move.title)
+							.setIcon("check-check")
+							.onClick(() => this.runOnFile(file, move.withDate))
+					);
+				}
 			})
 		);
 
@@ -90,8 +102,9 @@ export default class DoneMoverPlugin extends Plugin {
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-		// A removed setting: it leaves data.json on the next save.
+		// Removed settings: they leave data.json on the next save.
 		delete (this.settings as { oldDateTemplates?: unknown }).oldDateTemplates;
+		delete (this.settings as { appendCompletionDate?: unknown }).appendCompletionDate;
 	}
 
 	async saveSettings() {
@@ -103,14 +116,14 @@ export default class DoneMoverPlugin extends Plugin {
 		return templateLines(this.settings.dateTemplate).filter(isDateTemplate);
 	}
 
-	private moveOptions(returnUnchecked: boolean): MoveOptions {
+	private moveOptions(returnUnchecked: boolean, appendDate = false): MoveOptions {
 		const templates = this.dateTemplates();
 		return {
 			calloutHeader:
 				calloutType(this.settings.calloutHeader) !== null
 					? this.settings.calloutHeader
 					: DEFAULT_SETTINGS.calloutHeader,
-			appendDate: this.settings.appendCompletionDate,
+			appendDate,
 			datePosition: this.settings.datePosition,
 			// The first template adds dates, the others are only recognized.
 			dateTemplate: templates[0] ?? templateLines(DEFAULT_SETTINGS.dateTemplate)[0],
@@ -121,19 +134,19 @@ export default class DoneMoverPlugin extends Plugin {
 		};
 	}
 
-	private runMoveCompleted(editor: Editor) {
-		const result = moveCompletedTasks(editor.getValue(), this.moveOptions(true));
+	private runMoveCompleted(editor: Editor, withDate: boolean) {
+		const result = moveCompletedTasks(editor.getValue(), this.moveOptions(true, withDate));
 		this.applyResult(editor, result);
 		this.showResult(result);
 	}
 
 	/** Uses an open editor of the file (keeps the cursor), else rewrites the file itself. */
-	private async runOnFile(file: TFile) {
+	private async runOnFile(file: TFile, withDate: boolean) {
 		const editor = this.editorFor(file);
-		if (editor) return this.runMoveCompleted(editor);
+		if (editor) return this.runMoveCompleted(editor, withDate);
 		let result!: MoveResult;
 		await this.app.vault.process(file, (text) => {
-			result = moveCompletedTasks(text, this.moveOptions(true));
+			result = moveCompletedTasks(text, this.moveOptions(true, withDate));
 			return result.text;
 		});
 		this.showResult(result);
@@ -237,7 +250,7 @@ export default class DoneMoverPlugin extends Plugin {
 			name: this.strings.completeDefaultName,
 			// The char Obsidian itself puts on a click in Reading view.
 			char: "x",
-			dateTemplate: this.settings.appendCompletionDate ? this.moveOptions(false).dateTemplate : "",
+			dateTemplate: this.moveOptions(false).dateTemplate,
 			datePosition: this.settings.datePosition,
 			move: true,
 		};
