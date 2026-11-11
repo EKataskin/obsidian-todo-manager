@@ -40,6 +40,10 @@ To-Do Manager is a fork of
   character, adds a date and moves the task to the done block in one step.
   *Done* always comes first and is made of the general settings; your own
   templates are set up under *Complete templates* in the settings.
+- *Move completed tasks with date* command and menu item: moves the tasks
+  and adds the completion date by the first date template.
+- The plugin's items in the editor menu and the file menu are kept together
+  in their own section, apart from the items of other plugins.
 - A settings field whose input is not saved is highlighted.
 
 ### Changed
@@ -50,10 +54,13 @@ To-Do Manager is a fork of
 - The default completion date is `<small>[{YYYY-MM-DD}]</small>` instead of
   `✅ YYYY-MM-DD`.
 - Requires Obsidian 1.1.0.
+- *Move completed tasks* and auto mode move tasks without a completion date.
 
 ### Removed
 
 - *Move selection to Done* command and menu item.
+- *Append completion date* setting: *Move completed tasks with date* takes
+  its place.
 
 ### Fixed
 
