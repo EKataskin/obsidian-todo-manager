@@ -13,6 +13,9 @@ import { Lang, Strings, getStrings } from "./src/i18n";
 /** Delay before the auto mode reacts, so it does not interrupt typing. */
 const AUTO_MOVE_DEBOUNCE_MS = 400;
 
+/** The menu section of the plugin's items: the menu keeps them together, between separators. */
+const MENU_SECTION = "todo-manager";
+
 /**
  * Detects the UI language from Obsidian's locale (via the bundled moment
  * instance, which Obsidian sets from the app language). Falls back to English.
@@ -61,6 +64,7 @@ export default class DoneMoverPlugin extends Plugin {
 						item
 							.setTitle(move.title)
 							.setIcon("check-check")
+							.setSection(MENU_SECTION)
 							.onClick(() => this.runMoveCompleted(editor, move.withDate))
 					);
 				}
@@ -83,6 +87,7 @@ export default class DoneMoverPlugin extends Plugin {
 						item
 							.setTitle(move.title)
 							.setIcon("check-check")
+							.setSection(MENU_SECTION)
 							.onClick(() => this.runOnFile(file, move.withDate))
 					);
 				}
@@ -190,7 +195,7 @@ export default class DoneMoverPlugin extends Plugin {
 	private addSubmenu(menu: Menu, title: string, icon: string): { submenu: Menu | undefined; target: Menu } {
 		let submenu: Menu | undefined;
 		menu.addItem((item) => {
-			item.setTitle(title).setIcon(icon);
+			item.setTitle(title).setIcon(icon).setSection(MENU_SECTION);
 			// Submenus are not in the public API.
 			submenu = (item as MenuItem & { setSubmenu?: () => Menu }).setSubmenu?.();
 		});
