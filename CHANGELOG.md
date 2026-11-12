@@ -13,7 +13,7 @@ To-Do Manager is a fork of
   callout for completed tasks at its end, instead of one `### Done` heading
   for the whole note. Newly moved tasks go to the top of the callout.
 - Moving back: a task reopened inside the callout returns to the end of its
-  list on the next *Move completed tasks*, and its completion date is
+  list on the next *Move completed tasks*, and its completion dates are
   removed. A callout that becomes empty is removed.
 - *Done block header* setting: the first line of the callout. Existing
   callouts are found by their type, so changing the header text keeps them.
@@ -39,7 +39,10 @@ To-Do Manager is a fork of
 - *Complete by template* submenu in the editor menu: sets the status
   character, adds a date and moves the task to the done block in one step.
   *Done* always comes first and is made of the general settings; your own
-  templates are set up under *Complete templates* in the settings.
+  templates are set up under *Complete templates* in the settings. The
+  arrows next to a template's name change the order in the menu.
+- *Undo completion* at the end of that submenu: puts the open status,
+  removes one date and returns the task from the done block to its list.
 - *Move completed tasks with date* command and menu item: moves the tasks
   and adds the completion date by the first date template.
 - The plugin's items in the editor menu and the file menu are kept together
@@ -64,6 +67,9 @@ To-Do Manager is a fork of
 
 ### Fixed
 
+- Auto mode moves a task only when its checkbox is checked. A completed
+  task typed by hand, e.g. `- [x] text`, no longer moves away while it is
+  being typed.
 - Auto mode works on the note being edited, even when another note becomes
   active before it runs.
 - Headings, tasks and callouts inside code fences are ignored.
