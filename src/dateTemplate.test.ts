@@ -10,10 +10,6 @@ describe("formatDate", () => {
 		expect(formatDate("{D.M.YYYY}", DAY)).toBe("7.10.2026");
 	});
 
-	it('reads "{date}" as YYYY-MM-DD', () => {
-		expect(formatDate("✅ {date}", DAY)).toBe("✅ 2026-10-07");
-	});
-
 	it("leaves letters outside braces and braces without a format as they are", () => {
 		expect(formatDate("Done {DD} {note}", DAY)).toBe("Done 07 {note}");
 	});
@@ -22,7 +18,6 @@ describe("formatDate", () => {
 describe("isDateTemplate", () => {
 	it("needs a format in braces", () => {
 		expect(isDateTemplate("[{MM.YYYY}]")).toBe(true);
-		expect(isDateTemplate("✅ {date}")).toBe(true);
 		expect(isDateTemplate("[MM.YYYY]")).toBe(false);
 		expect(isDateTemplate("{note}")).toBe(false);
 	});
@@ -34,12 +29,12 @@ describe("dateRegexSource", () => {
 		expect(re.test("a [6.2025]")).toBe(true);
 		expect(re.test("a [06.2025]")).toBe(true);
 		expect(re.test("a [6-2025]")).toBe(false);
-		expect(new RegExp(dateRegexSource("({date})")).test("(2026-10-07)")).toBe(true);
+		expect(new RegExp(dateRegexSource("({YYYY-MM-DD})")).test("(2026-10-07)")).toBe(true);
 	});
 });
 
 describe("removeDates", () => {
-	const templates = ["[{MM.YYYY}]", "✅ {date}"];
+	const templates = ["[{MM.YYYY}]", "✅ {YYYY-MM-DD}"];
 
 	it("removes dates of every template with the space before them", () => {
 		expect(removeDates("- [+] Тачки [06.2025]", templates)).toBe("- [+] Тачки");

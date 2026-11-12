@@ -3,16 +3,11 @@
 import { STATUS_RE } from "./taskChars";
 import { DatePosition } from "./types";
 
-/** A date format in braces: "{date}" or text with YYYY, MM, DD, M or D in it. */
-const FORMAT_RE = /\{(date|[^{}]*[YMD][^{}]*)\}/g;
+/** A date format in braces: text with YYYY, MM, DD, M or D in it. */
+const FORMAT_RE = /\{([^{}]*[YMD][^{}]*)\}/g;
 const TOKEN_RE = /YYYY|MM|DD|M|D/g;
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-/** "{date}" is the format of templates written before formats were added. */
-function format(m: string): string {
-	return m === "date" ? "YYYY-MM-DD" : m;
-}
 
 /** The non-empty lines of the date templates setting, trimmed. */
 export function templateLines(text: string): string[] {
@@ -37,13 +32,13 @@ export function formatDate(template: string, day: Date): string {
 		M: String(day.getMonth() + 1),
 		D: String(day.getDate()),
 	};
-	return template.replace(FORMAT_RE, (_, f: string) => format(f).replace(TOKEN_RE, (t) => values[t]));
+	return template.replace(FORMAT_RE, (_, f: string) => f.replace(TOKEN_RE, (t) => values[t]));
 }
 
 /** Regex source that matches a date written with the template. */
 export function dateRegexSource(template: string): string {
 	const digits: Record<string, string> = { YYYY: "\\d{4}", MM: "\\d{2}", DD: "\\d{2}", M: "\\d{1,2}", D: "\\d{1,2}" };
-	const formatRegex = (f: string) => format(f).split(/(YYYY|MM|DD|M|D)/).map((part, i) => (i % 2 ? digits[part] : escape(part))).join("");
+	const formatRegex = (f: string) => f.split(/(YYYY|MM|DD|M|D)/).map((part, i) => (i % 2 ? digits[part] : escape(part))).join("");
 	return template.split(FORMAT_RE).map((part, i) => (i % 2 ? formatRegex(part) : escape(part))).join("");
 }
 

@@ -52,4 +52,9 @@ describe("undoCompletion", () => {
 	it("leaves a task in the list in place and does not move other tasks", () => {
 		expect(undo(["- [x] a ✅ 2026-10-07", "- [x] b"], [0])).toEqual(["- [ ] a", "- [x] b"]);
 	});
+
+	it("removes one date of a task in the done block too", () => {
+		const text = ["- [ ] z", "", "> [!done]- Done", "> - [x] a ✅ 2026-01-01 [01.2026]"].join("\n");
+		expect(undoCompletion(text, [3], ["✅ {YYYY-MM-DD}", "[{MM.YYYY}]"], OPTS).split("\n")).toEqual(["- [ ] z", "- [ ] a [01.2026]"]);
+	});
 });

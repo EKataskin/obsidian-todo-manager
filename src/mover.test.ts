@@ -6,7 +6,7 @@ const OPTS: MoveOptions = {
 	calloutHeader: "> [!done]- Выполнено",
 	appendDate: false,
 	datePosition: "end",
-	dateTemplate: "✅ {date}",
+	dateTemplate: "✅ {YYYY-MM-DD}",
 	otherDateTemplates: [],
 	closedChars: "xX-",
 	returnUnchecked: false,
@@ -47,12 +47,12 @@ describe("moveCompletedTasks", () => {
 	});
 
 	it("puts the date from the template at the start of the task text", () => {
-		const r = run(["## A", "- [x] a"], { appendDate: true, datePosition: "start", dateTemplate: "[done:: {date}]" });
+		const r = run(["## A", "- [x] a"], { appendDate: true, datePosition: "start", dateTemplate: "[done:: {YYYY-MM-DD}]" });
 		expect(r.text).toContain("> - [x] [done:: 2026-10-17] a");
 	});
 
 	it("puts the date from the template at the end of the line", () => {
-		const r = run(["## A", "- [x] a"], { appendDate: true, dateTemplate: "({date})" });
+		const r = run(["## A", "- [x] a"], { appendDate: true, dateTemplate: "({YYYY-MM-DD})" });
 		expect(r.text).toContain("> - [x] a (2026-10-17)");
 	});
 
@@ -62,19 +62,19 @@ describe("moveCompletedTasks", () => {
 	});
 
 	it("does not add a second date when a date of a formatted template is there", () => {
-		const r = run(["## A", "- [x] a [06.2025]"], { appendDate: true, dateTemplate: "({date})", otherDateTemplates: ["[{MM.YYYY}]"] });
+		const r = run(["## A", "- [x] a [06.2025]"], { appendDate: true, dateTemplate: "({YYYY-MM-DD})", otherDateTemplates: ["[{MM.YYYY}]"] });
 		expect(r.text).toContain("> - [x] a [06.2025]");
 		expect(r.text).not.toContain("2026-10-17");
 	});
 
 	it("does not add a second date when the template date is already there", () => {
-		const r = run(["## A", "- [x] [done:: 2026-10-01] a"], { appendDate: true, datePosition: "start", dateTemplate: "[done:: {date}]" });
+		const r = run(["## A", "- [x] [done:: 2026-10-01] a"], { appendDate: true, datePosition: "start", dateTemplate: "[done:: {YYYY-MM-DD}]" });
 		expect(r.text).toContain("> - [x] [done:: 2026-10-01] a");
 		expect(r.text).not.toContain("2026-10-17");
 	});
 
 	it("does not add a second date when a date of another template is there", () => {
-		const r = run(["## A", "- [x] a ✅ 2026-10-01"], { appendDate: true, dateTemplate: "({date})", otherDateTemplates: ["✅ {date}"] });
+		const r = run(["## A", "- [x] a ✅ 2026-10-01"], { appendDate: true, dateTemplate: "({YYYY-MM-DD})", otherDateTemplates: ["✅ {YYYY-MM-DD}"] });
 		expect(r.text).toContain("> - [x] a ✅ 2026-10-01");
 		expect(r.text).not.toContain("2026-10-17");
 	});
@@ -221,14 +221,14 @@ describe("moveCompletedTasks with returnUnchecked", () => {
 	});
 
 	it("strips a template date from the start of an unchecked line", () => {
-		const r = run(["## A", "", "> [!done]- X", "> - [ ] [done:: 2026-10-01] p"], { ...back, dateTemplate: "[done:: {date}]" });
+		const r = run(["## A", "", "> [!done]- X", "> - [ ] [done:: 2026-10-01] p"], { ...back, dateTemplate: "[done:: {YYYY-MM-DD}]" });
 		expect(r.text).toBe(["## A", "- [ ] p"].join("\n"));
 	});
 
 	it("strips a date written with another template", () => {
 		const r = run(["## A", "", "> [!done]- X", "> - [ ] p <small>[2026-10-01]</small>"], {
 			...back,
-			otherDateTemplates: ["<small>[{date}]</small>"],
+			otherDateTemplates: ["<small>[{YYYY-MM-DD}]</small>"],
 		});
 		expect(r.text).toBe(["## A", "- [ ] p"].join("\n"));
 	});
@@ -302,6 +302,19 @@ describe("changedRange", () => {
 		const after = moveCompletedTasks(before, OPTS).text;
 		expect(apply(before, after)).toBe(after);
 		expect(changedRange(before, after).from).toBeGreaterThanOrEqual("## A\n".length);
+	});
+});
+
+describe("moveCompletedTasks: dates of a returned task", () => {
+	const lines = ["- [ ] z", "", "> [!done]- X", "> - [ ] a ✅ 2026-01-01 [01.2026]"];
+	const templates = { returnUnchecked: true, otherDateTemplates: ["[{MM.YYYY}]"] };
+
+	it("removes the dates of every template", () => {
+		expect(run(lines, templates).text.split("\n")).toEqual(["- [ ] z", "- [ ] a"]);
+	});
+
+	it("keeps them with keepDates", () => {
+		expect(run(lines, { ...templates, keepDates: true }).text.split("\n")).toEqual(["- [ ] z", "- [ ] a ✅ 2026-01-01 [01.2026]"]);
 	});
 });
 

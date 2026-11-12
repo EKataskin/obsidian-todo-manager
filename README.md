@@ -43,7 +43,7 @@ German or Russian when Obsidian is set to one of them.
   keeps its parent in the list.
 - **Moving back:** reopen a task inside the callout (e.g. uncheck it) and run
   the same command. Every block with an open task returns to the end of its
-  list, and the completion date is removed from its open lines. A callout that becomes empty is removed. Unchecking
+  list, and the completion dates are removed from its open lines. A callout that becomes empty is removed. Unchecking
   alone changes nothing.
 - The callout is found by its type (`[!done]` by default), so changing the
   header text later does not lose existing blocks.
@@ -62,7 +62,8 @@ German or Russian when Obsidian is set to one of them.
 - *Date templates* holds one template per line. The date format goes in
   braces and is made of `YYYY`, `MM`, `DD`, `M` and `D` (`M` and `D` without
   a leading zero), e.g. `<small>[{YYYY-MM-DD}]</small>` or `[{MM.YYYY}]`.
-  Text outside the braces stays as it is.
+  Text outside the braces stays as it is. Inside them `M` and `D` are
+  always read as the date, so other text goes outside.
 - The first template is used when tasks are moved. All of them are offered
   in the editor's right-click menu under *Completion date*, each already
   filled with today's date and rendered as in the note (HTML and markdown).

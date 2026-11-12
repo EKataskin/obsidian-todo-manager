@@ -1,7 +1,7 @@
 // Pure task-moving logic — no Obsidian imports, fully unit-testable.
 
 import { MoveOptions, MoveResult, TaskBlock } from "./types";
-import { dateRegexSource, formatDate } from "./dateTemplate";
+import { addDate, dateRegexSource } from "./dateTemplate";
 import {
 	ParsedLine,
 	TASK_RE,
@@ -24,16 +24,10 @@ function dateRegex(opts: MoveOptions): RegExp {
 /** Adds the templated date to closed task lines that do not yet have one. */
 function addDateToBlock(blockLines: string[], opts: MoveOptions): string[] {
 	const re = dateRegex(opts);
-	const stamp = formatDate(opts.dateTemplate, opts.today);
 	return blockLines.map((line) => {
 		const m = line.match(TASK_RE);
-		if (!m) return line;
-		if (!opts.closedChars.includes(m[3]) || re.test(line)) return line;
-		if (opts.datePosition === "start") {
-			const text = (m[4] ?? "").trim();
-			return `${m[1]}${m[2]} [${m[3]}] ${stamp}${text ? " " + text : ""}`;
-		}
-		return line.replace(/\s*$/, "") + " " + stamp;
+		if (!m || !opts.closedChars.includes(m[3]) || re.test(line)) return line;
+		return addDate(line, opts.dateTemplate, opts.today, opts.datePosition) ?? line;
 	});
 }
 
@@ -92,9 +86,9 @@ function shouldMove(parsed: ParsedLine[], block: TaskBlock, offset: number, opts
 	return false;
 }
 
-/** Removes the templated completion date from open task lines. */
+/** Removes the templated completion dates from open task lines. */
 function stripDateFromOpen(blockLines: string[], opts: MoveOptions): string[] {
-	const re = new RegExp(`\\s*(?:${dateRegex(opts).source})`);
+	const re = new RegExp(`\\s*(?:${dateRegex(opts).source})`, "g");
 	return blockLines.map((line) => {
 		const m = line.match(TASK_RE);
 		if (!m || opts.closedChars.includes(m[3])) return line;
@@ -134,7 +128,8 @@ function processSection(
 			if (!hasUncheckedTask(innerParsed, b)) continue;
 			if (opts.returnLines && !hasLine(opts.returnLines, offset + bodyStart + b.start, offset + bodyStart + b.end)) continue;
 			for (let i = b.start; i <= b.end; i++) removed.add(bodyStart + i);
-			returnedLines.push(...stripDateFromOpen(dedent(inner.slice(b.start, b.end + 1)), opts));
+			const back = dedent(inner.slice(b.start, b.end + 1));
+			returnedLines.push(...(opts.keepDates ? back : stripDateFromOpen(back, opts)));
 			returned++;
 		}
 	}

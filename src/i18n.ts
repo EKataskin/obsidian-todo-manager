@@ -3,54 +3,7 @@
 
 export type Lang = "en" | "de" | "ru";
 
-export interface Strings {
-	cmdMoveCompleted: string;
-	cmdMoveCompletedWithDate: string;
-	menuTaskStatus: string;
-	menuCompletionDate: string;
-	menuRemoveDate: string;
-	menuCompleteByTemplate: string;
-	completeDefaultName: string;
-	menuUndoCompletion: string;
-	noticeMoved: (moved: number, returned: number) => string;
-	noticeAutoMoved: (count: number) => string;
-	noticeNoCompleted: string;
-	headingMove: string;
-	headingStatusMenu: string;
-	headingDate: string;
-	headingCompleteTemplates: string;
-	settingCompleteTemplatesDesc: string;
-	buttonAddTemplate: string;
-	buttonDeleteTemplate: string;
-	buttonMoveUp: string;
-	buttonMoveDown: string;
-	settingTemplateNameName: string;
-	settingTemplateCharName: string;
-	settingTemplateCharDesc: string;
-	settingTemplateDateName: string;
-	settingTemplateDateDesc: string;
-	settingTemplateMoveName: string;
-	settingTemplateMoveDesc: string;
-	settingAutoModeName: string;
-	settingAutoModeDesc: string;
-	settingCalloutName: string;
-	settingCalloutDesc: string;
-	settingClosedName: string;
-	settingClosedDesc: string;
-	settingMenuCharsName: string;
-	settingMenuCharsDesc: string;
-	buttonFromTheme: string;
-	settingDatePositionName: string;
-	settingDatePositionDesc: string;
-	datePositionStart: string;
-	datePositionEnd: string;
-	settingDateTemplateName: string;
-	settingDateTemplateDesc: string;
-	settingExcludedName: string;
-	settingExcludedDesc: string;
-}
-
-const en: Strings = {
+const en = {
 	cmdMoveCompleted: "Move completed tasks",
 	cmdMoveCompletedWithDate: "Move completed tasks with date",
 	menuTaskStatus: "Task status",
@@ -59,8 +12,8 @@ const en: Strings = {
 	menuCompleteByTemplate: "Complete by template",
 	completeDefaultName: "Done",
 	menuUndoCompletion: "Undo completion",
-	noticeMoved: (moved, returned) => `Moved: ${moved}, returned: ${returned}.`,
-	noticeAutoMoved: (count) => `Automatically moved ${count} completed task(s).`,
+	noticeMoved: (moved: number, returned: number) => `Moved: ${moved}, returned: ${returned}.`,
+	noticeAutoMoved: (count: number) => `Automatically moved ${count} completed task(s).`,
 	noticeNoCompleted: "Nothing to move.",
 	headingMove: "Moving completed tasks",
 	headingStatusMenu: "Status menu",
@@ -68,7 +21,7 @@ const en: Strings = {
 	headingCompleteTemplates: "Complete templates",
 	settingCompleteTemplatesDesc:
 		'Items of the "Complete by template" editor menu. Each sets the status character, adds a date and moves the task in one step. ' +
-		'"Done" always comes first: it puts "x", adds the date by the first date template when "Append completion date" is on, and moves the task.',
+		'"Done" always comes first: it puts "x", adds the date by the first date template and moves the task.',
 	buttonAddTemplate: "Add template",
 	buttonDeleteTemplate: "Delete template",
 	buttonMoveUp: "Move up",
@@ -104,13 +57,16 @@ const en: Strings = {
 	settingDateTemplateName: "Date templates",
 	settingDateTemplateDesc:
 		"One template per line. The date format goes in braces and is made of YYYY, MM, DD, M and D, " +
-		'e.g. "✅ {YYYY-MM-DD}" or "[{MM.YYYY}]". The first template is used for moved tasks, ' +
+		'e.g. "✅ {YYYY-MM-DD}" or "[{MM.YYYY}]". Other text goes outside the braces. The first template is used for moved tasks, ' +
 		'all of them are offered in the editor menu under "Completion date".',
 	settingExcludedName: "Excluded folders/files",
 	settingExcludedDesc:
 		"One vault path per line. Auto mode stays inactive in these folders " +
 		"(including subfolders) and files. Manual commands still work.",
 };
+
+/** The keys come from the English strings, so a translation cannot miss one. */
+export type Strings = typeof en;
 
 const de: Strings = {
 	cmdMoveCompleted: "Erledigte Aufgaben verschieben",
@@ -130,7 +86,7 @@ const de: Strings = {
 	headingCompleteTemplates: "Erledigt-Vorlagen",
 	settingCompleteTemplatesDesc:
 		"Einträge des Editor-Menüs „Nach Vorlage erledigen\". Jeder setzt das Statuszeichen, fügt ein Datum hinzu und verschiebt die Aufgabe in einem Schritt. " +
-		"„Erledigt\" steht immer an erster Stelle: setzt \"x\", fügt das Datum nach der ersten Datumsvorlage hinzu, wenn „Erledigt-Datum anhängen\" an ist, und verschiebt die Aufgabe.",
+		"„Erledigt\" steht immer an erster Stelle: setzt \"x\", fügt das Datum nach der ersten Datumsvorlage hinzu und verschiebt die Aufgabe.",
 	buttonAddTemplate: "Vorlage hinzufügen",
 	buttonDeleteTemplate: "Vorlage löschen",
 	buttonMoveUp: "Nach oben",
@@ -166,7 +122,7 @@ const de: Strings = {
 	settingDateTemplateName: "Datumsvorlagen",
 	settingDateTemplateDesc:
 		"Eine Vorlage pro Zeile. Das Datumsformat steht in geschweiften Klammern und besteht aus YYYY, MM, DD, M und D, " +
-		'z. B. "✅ {YYYY-MM-DD}" oder "[{MM.YYYY}]". Die erste Vorlage gilt für verschobene Aufgaben, ' +
+		'z. B. "✅ {YYYY-MM-DD}" oder "[{MM.YYYY}]". Anderer Text steht außerhalb der Klammern. Die erste Vorlage gilt für verschobene Aufgaben, ' +
 		"alle werden im Editor-Menü unter „Erledigt-Datum\" angeboten.",
 	settingExcludedName: "Ausgeschlossene Ordner/Dateien",
 	settingExcludedDesc:
@@ -192,7 +148,7 @@ const ru: Strings = {
 	headingCompleteTemplates: "Шаблоны выполнения",
 	settingCompleteTemplatesDesc:
 		"Пункты меню редактора «Выполнить по шаблону». Каждый за один шаг ставит символ статуса, добавляет дату и переносит задачу. " +
-		"«Выполнено» всегда идёт первым: ставит «x», добавляет дату по первому шаблону даты, если включено «Добавлять дату выполнения», и переносит задачу.",
+		"«Выполнено» всегда идёт первым: ставит «x», добавляет дату по первому шаблону даты и переносит задачу.",
 	buttonAddTemplate: "Добавить шаблон",
 	buttonDeleteTemplate: "Удалить шаблон",
 	buttonMoveUp: "Выше",
@@ -228,7 +184,7 @@ const ru: Strings = {
 	settingDateTemplateName: "Шаблоны даты",
 	settingDateTemplateDesc:
 		"Один шаблон на строку. Формат даты пишется в фигурных скобках из YYYY, MM, DD, M и D, " +
-		"например «✅ {YYYY-MM-DD}» или «[{MM.YYYY}]». Первый шаблон используется при переносе, " +
+		"например «✅ {YYYY-MM-DD}» или «[{MM.YYYY}]». Остальной текст пишется вне скобок. Первый шаблон используется при переносе, " +
 		"все шаблоны предлагает меню редактора в пункте «Дата выполнения».",
 	settingExcludedName: "Исключённые папки и файлы",
 	settingExcludedDesc:

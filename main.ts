@@ -1,6 +1,7 @@
-import { Editor, MarkdownFileInfo, MarkdownView, Menu, MenuItem, Notice, Plugin, TFile, moment, Component, MarkdownRenderer } from "obsidian";
-import { CompleteTemplate, DEFAULT_SETTINGS, DoneMoverSettings, MoveOptions, MoveResult } from "./src/types";
-import { DoneMoverSettingTab } from "./src/settings";
+import { Editor, MarkdownFileInfo, MarkdownView, Menu, MenuItem, Notice, Plugin, TFile, moment, Component, MarkdownRenderer, debounce, editorInfoField } from "obsidian";
+import { EditorView, ViewUpdate } from "@codemirror/view";
+import { CompleteTemplate, DEFAULT_SETTINGS, TodoManagerSettings, MoveOptions, MoveResult } from "./src/types";
+import { TodoManagerSettingTab } from "./src/settings";
 import { changedRange, moveCompletedTasks } from "./src/mover";
 import { calloutType } from "./src/taskParser";
 import { isPathExcluded } from "./src/exclusions";
@@ -27,15 +28,14 @@ function detectLang(): Lang {
 	return "en";
 }
 
-export default class DoneMoverPlugin extends Plugin {
-	settings!: DoneMoverSettings;
+export default class TodoManagerPlugin extends Plugin {
+	settings!: TodoManagerSettings;
 	/** Localized UI strings, resolved once at load time. */
 	strings: Strings = getStrings(detectLang());
-	private autoTimer: number | null = null;
 
 	async onload() {
 		await this.loadSettings();
-		this.addSettingTab(new DoneMoverSettingTab(this.app, this));
+		this.addSettingTab(new TodoManagerSettingTab(this.app, this));
 
 		// Each move comes without and with the completion date.
 		const moves = [
@@ -94,21 +94,20 @@ export default class DoneMoverPlugin extends Plugin {
 			})
 		);
 
-		this.registerEvent(
-			this.app.workspace.on("editor-change", (editor, info) => {
-				if (this.settings.autoMode) this.scheduleAutoMove(editor, info);
+		// Auto mode reacts to a checked checkbox, not to typing.
+		this.registerEditorExtension(
+			EditorView.updateListener.of((update) => {
+				if (!this.settings.autoMode || !this.isCheck(update)) return;
+				const info = update.state.field(editorInfoField, false);
+				if (info?.editor && info.file) this.autoMove(info.editor, info, info.file);
 			})
 		);
-	}
-
-	onunload() {
-		if (this.autoTimer !== null) window.clearTimeout(this.autoTimer);
+		this.register(() => this.autoMove.cancel());
 	}
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-		// Removed settings: they leave data.json on the next save.
-		delete (this.settings as { oldDateTemplates?: unknown }).oldDateTemplates;
+		// A removed setting: it leaves data.json on the next save.
 		delete (this.settings as { appendCompletionDate?: unknown }).appendCompletionDate;
 	}
 
@@ -121,8 +120,12 @@ export default class DoneMoverPlugin extends Plugin {
 		return templateLines(this.settings.dateTemplate).filter(isDateTemplate);
 	}
 
+	/** The template of the dates added on moving: the first valid one, else the default. */
+	private firstDateTemplate(): string {
+		return this.dateTemplates()[0] ?? templateLines(DEFAULT_SETTINGS.dateTemplate)[0];
+	}
+
 	private moveOptions(returnUnchecked: boolean, appendDate = false): MoveOptions {
-		const templates = this.dateTemplates();
 		return {
 			calloutHeader:
 				calloutType(this.settings.calloutHeader) !== null
@@ -131,8 +134,8 @@ export default class DoneMoverPlugin extends Plugin {
 			appendDate,
 			datePosition: this.settings.datePosition,
 			// The first template adds dates, the others are only recognized.
-			dateTemplate: templates[0] ?? templateLines(DEFAULT_SETTINGS.dateTemplate)[0],
-			otherDateTemplates: templates.slice(1),
+			dateTemplate: this.firstDateTemplate(),
+			otherDateTemplates: this.dateTemplates().slice(1),
 			closedChars: this.settings.closedChars || DEFAULT_SETTINGS.closedChars,
 			returnUnchecked,
 			today: new Date(),
@@ -255,7 +258,7 @@ export default class DoneMoverPlugin extends Plugin {
 			name: this.strings.completeDefaultName,
 			// The char Obsidian itself puts on a click in Reading view.
 			char: "x",
-			dateTemplate: this.moveOptions(false).dateTemplate,
+			dateTemplate: this.firstDateTemplate(),
 			datePosition: this.settings.datePosition,
 			move: true,
 		};
@@ -327,22 +330,45 @@ export default class DoneMoverPlugin extends Plugin {
 		);
 	}
 
+	/**
+	 * True when the update leaves more closed tasks and only swaps chars in
+	 * place: a checkbox was checked. Typing "- [x]" by hand changes the length.
+	 */
+	private isCheck(update: ViewUpdate): boolean {
+		if (!update.docChanged) return false;
+		const closedChars = this.settings.closedChars || DEFAULT_SETTINGS.closedChars;
+		const closed = (doc: ViewUpdate["state"]["doc"], from: number, to: number) => {
+			let count = 0;
+			for (let n = doc.lineAt(from).number; n <= doc.lineAt(to).number; n++) {
+				const status = taskStatus(doc.line(n).text);
+				if (status !== null && closedChars.includes(status)) count++;
+			}
+			return count;
+		};
+		let inPlace = true;
+		let grew = 0;
+		update.changes.iterChanges((fromA, toA, fromB, toB) => {
+			if (toA - fromA !== toB - fromB) inPlace = false;
+			grew += closed(update.state.doc, fromB, toB) - closed(update.startState.doc, fromA, toA);
+		});
+		return inPlace && grew > 0;
+	}
+
 	/** Works on the edited note, even if another note is active when the timer fires. */
-	private scheduleAutoMove(editor: Editor, info: MarkdownView | MarkdownFileInfo) {
-		const file = info.file;
-		if (this.autoTimer !== null) window.clearTimeout(this.autoTimer);
-		this.autoTimer = window.setTimeout(() => {
-			this.autoTimer = null;
+	private autoMove = debounce(
+		(editor: Editor, info: MarkdownFileInfo, file: TFile) => {
 			// The editor may show another note by now (navigation inside the same tab).
-			if (!file || info.file !== file) return;
+			if (info.file !== file) return;
 			if (isPathExcluded(file.path, this.settings.excludedPaths)) return;
 			const result = moveCompletedTasks(editor.getValue(), this.moveOptions(false));
 			if (result.movedCount > 0) {
 				this.applyResult(editor, result);
 				new Notice(this.strings.noticeAutoMoved(result.movedCount));
 			}
-		}, AUTO_MOVE_DEBOUNCE_MS);
-	}
+		},
+		AUTO_MOVE_DEBOUNCE_MS,
+		true
+	);
 
 	private applyResult(editor: Editor, result: MoveResult) {
 		if (result.movedCount + result.returnedCount > 0) this.replaceText(editor, result.text);

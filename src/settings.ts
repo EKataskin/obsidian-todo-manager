@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import type DoneMoverPlugin from "../main";
+import type TodoManagerPlugin from "../main";
 import { calloutType } from "./taskParser";
 import { taskCharsFromCss } from "./taskChars";
 import { createStatusIcon, statusChars } from "./statusIcon";
@@ -30,10 +30,10 @@ function renderStatusPreview(el: HTMLElement, chars: string) {
 	for (const char of statusChars(chars)) createStatusIcon(el, char);
 }
 
-export class DoneMoverSettingTab extends PluginSettingTab {
-	plugin: DoneMoverPlugin;
+export class TodoManagerSettingTab extends PluginSettingTab {
+	plugin: TodoManagerPlugin;
 
-	constructor(app: App, plugin: DoneMoverPlugin) {
+	constructor(app: App, plugin: TodoManagerPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}

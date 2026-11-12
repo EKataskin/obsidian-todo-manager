@@ -1,6 +1,6 @@
 // Shared types and defaults. No Obsidian imports here so this stays unit-testable.
 
-export interface DoneMoverSettings {
+export interface TodoManagerSettings {
 	/** When on, fully completed tasks are moved automatically shortly after being checked. */
 	autoMode: boolean;
 	/** First line of the callout that collects completed tasks (e.g. "> [!done]- Done"). */
@@ -22,7 +22,7 @@ export interface DoneMoverSettings {
 	completeTemplates: CompleteTemplate[];
 }
 
-export const DEFAULT_SETTINGS: DoneMoverSettings = {
+export const DEFAULT_SETTINGS: TodoManagerSettings = {
 	autoMode: false,
 	calloutHeader: "> [!done]- Done",
 	datePosition: "end",
@@ -72,6 +72,8 @@ export interface MoveOptions {
 	moveLines?: ReadonlySet<number>;
 	/** When set, only the callout blocks with one of these line indices return. */
 	returnLines?: ReadonlySet<number>;
+	/** When on, returned open tasks keep their dates. */
+	keepDates?: boolean;
 }
 
 export interface MoveResult {

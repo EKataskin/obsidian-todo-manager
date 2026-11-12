@@ -32,6 +32,7 @@ export function undoCompletion(text: string, lines: number[], dateTemplates: str
 	const { lines: all, eol } = splitLines(text);
 	for (const i of lines) all[i] = removeFirstDate(setTaskStatus(all[i], " ") ?? all[i], dateTemplates);
 	// Nothing moves to the done block, only the blocks of these lines return.
-	const back = { ...opts, returnUnchecked: true, moveLines: new Set<number>(), returnLines: new Set(lines) };
+	// One date is gone already, the others stay, as for a task in the list.
+	const back = { ...opts, returnUnchecked: true, keepDates: true, moveLines: new Set<number>(), returnLines: new Set(lines) };
 	return moveCompletedTasks(all.join(eol), back).text;
 }
