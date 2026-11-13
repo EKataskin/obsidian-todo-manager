@@ -38,9 +38,11 @@ To-Do Manager is a fork of
   the characters that the theme and CSS snippets style.
 - *Complete by template* submenu in the editor menu: sets the status
   character, adds a date and moves the task to the done block in one step.
-  *Done* always comes first and is made of the general settings; your own
-  templates are set up under *Complete templates* in the settings. The
-  arrows next to a template's name change the order in the menu.
+  The templates are set up under *Complete templates* in the settings, and
+  the arrows next to a template's name change the order in the menu. The
+  built-in *Done* template is always there: on the first run it is made of
+  the general settings, everything but its name can be changed, and it
+  cannot be deleted.
 - *Undo completion* at the end of that submenu: puts the open status,
   removes one date and returns the task from the done block to its list.
 - *Move completed tasks with date* command and menu item: moves the tasks
@@ -58,6 +60,8 @@ To-Do Manager is a fork of
   `✅ YYYY-MM-DD`.
 - Requires Obsidian 1.1.0.
 - *Move completed tasks* and auto mode move tasks without a completion date.
+- The *Date templates* and *Excluded folders/files* fields have a minimum
+  size, so a few lines fit without resizing.
 
 ### Removed
 
