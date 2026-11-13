@@ -6,13 +6,13 @@
 }
 
 /* The date templates field: wide enough for a template like "<small>[{YYYY-MM-DD}]</small>" and a few lines. */
-.todo-manager-date-templates {
+.todo-manager-group-date textarea {
 	min-width: 20em;
 	min-height: 10em;
 }
 
 /* The excluded folders/files field: one path per line. */
-.todo-manager-excluded-paths {
+.todo-manager-group-move textarea {
 	min-width: 20em;
 	min-height: 6em;
 }
@@ -56,19 +56,6 @@
 .todo-manager-date-item > p {
 	display: inline;
 	margin: 0;
-}
-
-/*
- * A complete template in the settings: its fields in a frame, indented as a
- * child of the "Complete templates" heading. The margins of two frames collapse
- * into one gap.
- */
-.todo-manager-complete-template {
-	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--radius-m);
-	/* Obsidian drops the top padding of a first setting, so the frame gives it, as the last setting does at the bottom. */
-	padding: 0.75em 0.75em 0;
-	margin: var(--size-4-3) 0 var(--size-4-3) var(--size-4-6);
 }
 
 /* A complete template in the editor menu: the status icon, then the name. */

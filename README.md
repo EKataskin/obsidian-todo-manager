@@ -106,8 +106,9 @@ German or Russian when Obsidian is set to one of them.
   the done block. One undo reverts all of it.
 - The items come from *Complete templates* in the settings. Each has a
   name, a status character, a date template (empty means no date), a date
-  position and *Move to the done block*. The arrows next to the name
-  change the order of the templates in the menu.
+  position and *Move to the done block*; a click on the template opens
+  them. The cross deletes a template, dragging it by the handle
+  changes the order of the templates in the menu.
 - The *Done* template is always there. On the first run it is made of the
   general settings: it puts `x` (as a click in Reading view does), adds
   the date by the first date template, puts it where *Date position*

@@ -1,10 +1,10 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, Modal, Notice, PluginSettingTab, Setting, SettingDefinitionItem } from "obsidian";
 import type TodoManagerPlugin from "../main";
 import { calloutType } from "./taskParser";
 import { taskCharsFromCss } from "./taskChars";
 import { createStatusIcon, statusChars } from "./statusIcon";
 import { isDateTemplate, templateLines } from "./dateTemplate";
-import { CompleteTemplate, DatePosition } from "./types";
+import { CompleteTemplate, DatePosition, TodoManagerSettings } from "./types";
 
 /** Marks a field whose input is not saved; styled in styles.css. */
 function markInvalid(input: HTMLElement, invalid: boolean) {
@@ -30,258 +30,233 @@ function renderStatusPreview(el: HTMLElement, chars: string) {
 	for (const char of statusChars(chars)) createStatusIcon(el, char);
 }
 
+/** How the input of a text field is stored; the other fields are stored as they come. */
+const STORED: Partial<Record<keyof TodoManagerSettings, (value: string) => unknown>> = {
+	calloutHeader: (v) => v.trim(),
+	// Spaces are dropped: "- [ ]" is always an open task.
+	closedChars: (v) => v.replace(/\s/g, ""),
+	excludedPaths: templateLines,
+	dateTemplate: (v) => templateLines(v).join("\n"),
+};
+
 export class TodoManagerSettingTab extends PluginSettingTab {
 	plugin: TodoManagerPlugin;
 
 	constructor(app: App, plugin: TodoManagerPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+		this.containerEl.addClass("todo-manager-settings");
 	}
 
-	display(): void {
-		const { containerEl } = this;
+	getSettingDefinitions(): SettingDefinitionItem[] {
 		const s = this.plugin.strings;
-		containerEl.empty();
-		containerEl.addClass("todo-manager-settings");
+		const datePositions = { start: s.datePositionStart, end: s.datePositionEnd };
+		return [
+			{
+				type: "group",
+				heading: s.headingMove,
+				cls: "todo-manager-group-move",
+				items: [
+					{ name: s.settingAutoModeName, desc: s.settingAutoModeDesc, control: { type: "toggle", key: "autoMode" } },
+					{
+						name: s.settingCalloutName,
+						desc: s.settingCalloutDesc,
+						control: {
+							type: "text",
+							key: "calloutHeader",
+							placeholder: "> [!done]- Done",
+							validate: (v) => (calloutType(v.trim()) === null ? s.errorCallout : undefined),
+						},
+					},
+					{
+						name: s.settingClosedName,
+						desc: s.settingClosedDesc,
+						control: {
+							type: "text",
+							key: "closedChars",
+							placeholder: "xX-",
+							validate: (v) => (v.trim() === "" ? s.errorEmpty : undefined),
+						},
+					},
+					{
+						name: s.settingExcludedName,
+						desc: s.settingExcludedDesc,
+						control: { type: "textarea", key: "excludedPaths", placeholder: "Templates\nArchiv/2025\nDaily/Scratch.md", rows: 4 },
+					},
+				],
+			},
+			{
+				type: "group",
+				heading: s.headingDate,
+				cls: "todo-manager-group-date",
+				items: [
+					{
+						name: s.settingDatePositionName,
+						desc: s.settingDatePositionDesc,
+						control: { type: "dropdown", key: "datePosition", options: datePositions },
+					},
+					{
+						name: s.settingDateTemplateName,
+						desc: s.settingDateTemplateDesc,
+						control: {
+							type: "textarea",
+							key: "dateTemplate",
+							placeholder: "<small>[{YYYY-MM-DD}]</small>\n[{MM.YYYY}]",
+							rows: 3,
+							validate: (v) => {
+								const lines = templateLines(v);
+								return lines.length > 0 && lines.every(isDateTemplate) ? undefined : s.errorDateTemplates;
+							},
+						},
+					},
+				],
+			},
+			{
+				type: "group",
+				heading: s.headingStatusMenu,
+				items: [{ name: s.settingMenuCharsName, desc: s.settingMenuCharsDesc, render: (setting) => this.renderMenuChars(setting) }],
+			},
+			{
+				type: "list",
+				heading: s.headingCompleteTemplates,
+				// Rows with an action, not pages: Obsidian adds the delete and drag buttons only to such rows.
+				items: this.plugin.settings.completeTemplates.map((t) => ({
+					name: t.name,
+					action: () => new CompleteTemplateModal(this, t).open(),
+				})),
+				addItem: { name: s.buttonAddTemplate, action: () => void this.addCompleteTemplate() },
+				onReorder: (from, to) => void this.moveCompleteTemplate(from, to),
+				onDelete: (i) => void this.deleteCompleteTemplate(i),
+			},
+			{
+				// Under the list: a row above it would part the "+" from the heading.
+				// Obsidian skips a row without a control, an action or render, so the description gets an empty render.
+				type: "group",
+				items: [{ name: "", desc: s.settingCompleteTemplatesDesc, render: () => undefined }],
+			},
+		];
+	}
 
-		new Setting(containerEl).setName(s.headingMove).setHeading();
+	getControlValue(key: string): unknown {
+		// The textarea shows one path per line.
+		if (key === "excludedPaths") return this.plugin.settings.excludedPaths.join("\n");
+		return this.plugin.settings[key as keyof TodoManagerSettings];
+	}
 
-		new Setting(containerEl)
-			.setName(s.settingAutoModeName)
-			.setDesc(s.settingAutoModeDesc)
-			.addToggle((toggle) =>
-				toggle.setValue(this.plugin.settings.autoMode).onChange(async (value) => {
-					this.plugin.settings.autoMode = value;
-					await this.plugin.saveSettings();
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		const store = STORED[key as keyof TodoManagerSettings];
+		(this.plugin.settings as unknown as Record<string, unknown>)[key] = store && typeof value === "string" ? store(value) : value;
+		await this.plugin.saveSettings();
+	}
+
+	/** The status chars field with a preview of the checkboxes and the "From theme" button. */
+	private renderMenuChars(setting: Setting) {
+		const s = this.plugin.strings;
+		const preview = setting.descEl.createDiv("todo-manager-status-preview");
+		renderStatusPreview(preview, this.plugin.settings.menuChars);
+		setting.addText((text) => {
+			text.setValue(this.plugin.settings.menuChars.replace(/\s/g, "")).onChange(async (value) => {
+				// Spaces are dropped: the open status is always offered anyway.
+				const chars = value.replace(/\s/g, "");
+				renderStatusPreview(preview, chars);
+				markInvalid(text.inputEl, chars === "");
+				if (chars === "") return;
+				this.plugin.settings.menuChars = chars;
+				await this.plugin.saveSettings();
+			});
+			setting.addButton((button) =>
+				button.setButtonText(s.buttonFromTheme).onClick(() => {
+					text.setValue(taskCharsFromCss(loadedCss(), this.plugin.settings.closedChars));
+					text.onChanged();
+				})
+			);
+		});
+	}
+
+	/** Saves the new list of complete templates and redraws the settings. */
+	private async setCompleteTemplates(templates: CompleteTemplate[]) {
+		this.plugin.settings.completeTemplates = templates;
+		await this.plugin.saveSettings();
+		this.update();
+	}
+
+	private async addCompleteTemplate() {
+		const template: CompleteTemplate = {
+			name: this.plugin.strings.newTemplateName,
+			char: "x",
+			dateTemplate: "",
+			datePosition: this.plugin.settings.datePosition,
+			move: true,
+		};
+		// A new array: the one of the defaults must stay empty.
+		await this.setCompleteTemplates([...this.plugin.settings.completeTemplates, template]);
+		new CompleteTemplateModal(this, template).open();
+	}
+
+	private async moveCompleteTemplate(from: number, to: number) {
+		const list = [...this.plugin.settings.completeTemplates];
+		list.splice(to, 0, ...list.splice(from, 1));
+		await this.setCompleteTemplates(list);
+	}
+
+	private async deleteCompleteTemplate(index: number) {
+		const list = this.plugin.settings.completeTemplates;
+		if (list[index]?.builtin) {
+			new Notice(this.plugin.strings.noticeBuiltinTemplate);
+			return;
+		}
+		await this.setCompleteTemplates(list.filter((_, i) => i !== index));
+	}
+}
+
+/** The fields of one complete template in a window. Invalid input is not saved. */
+class CompleteTemplateModal extends Modal {
+	constructor(
+		private tab: TodoManagerSettingTab,
+		private template: CompleteTemplate
+	) {
+		super(tab.app);
+	}
+
+	onOpen() {
+		const { plugin } = this.tab;
+		const s = plugin.strings;
+		const t = this.template;
+		const el = this.contentEl;
+		this.setTitle(t.name);
+
+		/** A text field of the template; `check` returns the error for the trimmed input. */
+		const text = (setting: Setting, field: "name" | "char" | "dateTemplate", check: (v: string) => string | undefined) =>
+			setting.addText((c) =>
+				c.setValue(t[field]).onChange(async (value) => {
+					const error = check(value.trim());
+					setting.setErrorMessage(error ?? null);
+					if (error) return;
+					t[field] = value.trim();
+					await plugin.saveSettings();
 				})
 			);
 
-		new Setting(containerEl)
-			.setName(s.settingCalloutName)
-			.setDesc(s.settingCalloutDesc)
-			.addText((text) =>
-				text
-					.setPlaceholder("> [!done]- Done")
-					.setValue(this.plugin.settings.calloutHeader)
-					.onChange(async (value) => {
-						// Only a valid callout header is saved; partial input is ignored.
-						const valid = calloutType(value.trim()) !== null;
-						markInvalid(text.inputEl, !valid);
-						if (!valid) return;
-						this.plugin.settings.calloutHeader = value.trim();
-						await this.plugin.saveSettings();
-					})
-			);
+		const name = new Setting(el).setName(s.settingTemplateNameName);
+		text(name, "name", (v) => (v === "" ? s.errorEmpty : undefined));
+		// The built-in template keeps the name of the interface language.
+		name.setDisabled(!!t.builtin);
 
-		new Setting(containerEl)
-			.setName(s.settingClosedName)
-			.setDesc(s.settingClosedDesc)
-			.addText((text) =>
-				text
-					.setPlaceholder("xX-")
-					.setValue(this.plugin.settings.closedChars)
-					.onChange(async (value) => {
-						// Spaces are dropped: "- [ ]" is always an open task.
-						const chars = value.replace(/\s/g, "");
-						markInvalid(text.inputEl, chars === "");
-						if (chars === "") return;
-						this.plugin.settings.closedChars = chars;
-						await this.plugin.saveSettings();
-					})
-			);
-
-		new Setting(containerEl)
-			.setName(s.settingExcludedName)
-			.setDesc(s.settingExcludedDesc)
-			.addTextArea((text) => {
-				text
-					.setPlaceholder("Templates\nArchiv/2025\nDaily/Scratch.md")
-					.setValue(this.plugin.settings.excludedPaths.join("\n"))
-					.onChange(async (value) => {
-						this.plugin.settings.excludedPaths = templateLines(value);
-						await this.plugin.saveSettings();
-					});
-				text.inputEl.rows = 4;
-				text.inputEl.addClass("todo-manager-excluded-paths");
-			});
-
-		new Setting(containerEl).setName(s.headingDate).setHeading();
-
-		new Setting(containerEl)
-			.setName(s.settingDatePositionName)
-			.setDesc(s.settingDatePositionDesc)
-			.addDropdown((dropdown) =>
-				dropdown
-					.addOption("start", s.datePositionStart)
-					.addOption("end", s.datePositionEnd)
-					.setValue(this.plugin.settings.datePosition)
-					.onChange(async (value) => {
-						this.plugin.settings.datePosition = value as DatePosition;
-						await this.plugin.saveSettings();
-					})
-			);
-
-		new Setting(containerEl)
-			.setName(s.settingDateTemplateName)
-			.setDesc(s.settingDateTemplateDesc)
-			.addTextArea((text) => {
-				text
-					.setPlaceholder("<small>[{YYYY-MM-DD}]</small>\n[{MM.YYYY}]")
-					.setValue(this.plugin.settings.dateTemplate)
-					.onChange(async (value) => {
-						// Only templates with a date format are saved; partial input is ignored.
-						const lines = templateLines(value);
-						const valid = lines.length > 0 && lines.every(isDateTemplate);
-						markInvalid(text.inputEl, !valid);
-						if (!valid) return;
-						this.plugin.settings.dateTemplate = lines.join("\n");
-						await this.plugin.saveSettings();
-					});
-				text.inputEl.rows = 3;
-				text.inputEl.addClass("todo-manager-date-templates");
-			});
-
-		new Setting(containerEl).setName(s.headingStatusMenu).setHeading();
-
-		const menuChars = new Setting(containerEl).setName(s.settingMenuCharsName).setDesc(s.settingMenuCharsDesc);
-		const preview = menuChars.descEl.createDiv("todo-manager-status-preview");
-		menuChars
-			.addText((text) => {
-				text.setValue(this.plugin.settings.menuChars.replace(/\s/g, "")).onChange(async (value) => {
-					// Spaces are dropped: the open status is always offered anyway.
-					const chars = value.replace(/\s/g, "");
-					renderStatusPreview(preview, chars);
-					markInvalid(text.inputEl, chars === "");
-					if (chars === "") return;
-					this.plugin.settings.menuChars = chars;
-					await this.plugin.saveSettings();
-				});
-				menuChars.addButton((button) =>
-					button.setButtonText(s.buttonFromTheme).onClick(() => {
-						text.setValue(taskCharsFromCss(loadedCss(), this.plugin.settings.closedChars));
-						text.onChanged();
-					})
-				);
-			});
-		renderStatusPreview(preview, this.plugin.settings.menuChars);
-
-		new Setting(containerEl).setName(s.headingCompleteTemplates).setHeading();
-
-		new Setting(containerEl).setDesc(s.settingCompleteTemplatesDesc).addButton((button) =>
-			button.setButtonText(s.buttonAddTemplate).onClick(async () => {
-				const template: CompleteTemplate = {
-					name: "",
-					char: "x",
-					dateTemplate: "",
-					datePosition: this.plugin.settings.datePosition,
-					move: true,
-				};
-				// A new array: the one of the defaults must stay empty.
-				this.plugin.settings.completeTemplates = [...this.plugin.settings.completeTemplates, template];
-				await this.plugin.saveSettings();
-				this.display();
-			})
+		text(new Setting(el).setName(s.settingTemplateCharName).setDesc(s.settingTemplateCharDesc), "char", (v) =>
+			Array.from(v).length === 1 ? undefined : s.errorOneChar
 		);
-		for (const template of this.plugin.settings.completeTemplates) this.renderCompleteTemplate(containerEl, template);
-	}
-
-	/** Moves the template one place up (-1) or down (1) in the list and in the menu. */
-	private async moveCompleteTemplate(template: CompleteTemplate, step: -1 | 1) {
-		const list = [...this.plugin.settings.completeTemplates];
-		const i = list.indexOf(template);
-		const j = i + step;
-		if (i < 0 || j < 0 || j >= list.length) return;
-		[list[i], list[j]] = [list[j], list[i]];
-		this.plugin.settings.completeTemplates = list;
-		await this.plugin.saveSettings();
-		this.display();
-	}
-
-	/** The fields of one complete template in a frame. Invalid input is not saved. */
-	private renderCompleteTemplate(parent: HTMLElement, template: CompleteTemplate) {
-		const s = this.plugin.strings;
-		const el = parent.createDiv("todo-manager-complete-template");
-
-		const nameSetting = new Setting(el)
-			.setName(s.settingTemplateNameName)
-			.addText((text) => {
-				// The built-in template keeps the name of the interface language.
-				text.setDisabled(!!template.builtin);
-				markInvalid(text.inputEl, template.name === "");
-				text.setValue(template.name).onChange(async (value) => {
-					const name = value.trim();
-					markInvalid(text.inputEl, name === "");
-					if (name === "") return;
-					template.name = name;
-					await this.plugin.saveSettings();
-				});
-			})
-			.addExtraButton((button) =>
-				button
-					.setIcon("arrow-up")
-					.setTooltip(s.buttonMoveUp)
-					.setDisabled(this.plugin.settings.completeTemplates[0] === template)
-					.onClick(() => this.moveCompleteTemplate(template, -1))
-			)
-			.addExtraButton((button) =>
-				button
-					.setIcon("arrow-down")
-					.setTooltip(s.buttonMoveDown)
-					.setDisabled(this.plugin.settings.completeTemplates.at(-1) === template)
-					.onClick(() => this.moveCompleteTemplate(template, 1))
-			);
-		// The built-in template cannot be deleted.
-		if (!template.builtin) {
-			nameSetting.addExtraButton((button) =>
-				button
-					.setIcon("trash-2")
-					.setTooltip(s.buttonDeleteTemplate)
-					.onClick(async () => {
-						this.plugin.settings.completeTemplates = this.plugin.settings.completeTemplates.filter((t) => t !== template);
-						await this.plugin.saveSettings();
-						this.display();
-					})
-			);
-		}
-
-		new Setting(el)
-			.setName(s.settingTemplateCharName)
-			.setDesc(s.settingTemplateCharDesc)
-			.addText((text) => {
-				text.inputEl.maxLength = 1;
-				text.setValue(template.char).onChange(async (value) => {
-					const char = value.trim();
-					markInvalid(text.inputEl, char === "");
-					if (char === "") return;
-					template.char = char;
-					await this.plugin.saveSettings();
-				});
-			});
-
-		new Setting(el)
-			.setName(s.settingTemplateDateName)
-			.setDesc(s.settingTemplateDateDesc)
-			.addText((text) =>
-				text
-					.setValue(template.dateTemplate)
-					.onChange(async (value) => {
-						const date = value.trim();
-						const valid = date === "" || isDateTemplate(date);
-						markInvalid(text.inputEl, !valid);
-						if (!valid) return;
-						template.dateTemplate = date;
-						await this.plugin.saveSettings();
-					})
-			);
+		text(new Setting(el).setName(s.settingTemplateDateName).setDesc(s.settingTemplateDateDesc), "dateTemplate", (v) =>
+			v === "" || isDateTemplate(v) ? undefined : s.errorDateTemplate
+		);
 
 		new Setting(el).setName(s.settingDatePositionName).addDropdown((dropdown) =>
 			dropdown
 				.addOption("start", s.datePositionStart)
 				.addOption("end", s.datePositionEnd)
-				.setValue(template.datePosition)
+				.setValue(t.datePosition)
 				.onChange(async (value) => {
-					template.datePosition = value as DatePosition;
-					await this.plugin.saveSettings();
+					t.datePosition = value as DatePosition;
+					await plugin.saveSettings();
 				})
 		);
 
@@ -289,10 +264,16 @@ export class TodoManagerSettingTab extends PluginSettingTab {
 			.setName(s.settingTemplateMoveName)
 			.setDesc(s.settingTemplateMoveDesc)
 			.addToggle((toggle) =>
-				toggle.setValue(template.move).onChange(async (value) => {
-					template.move = value;
-					await this.plugin.saveSettings();
+				toggle.setValue(t.move).onChange(async (value) => {
+					t.move = value;
+					await plugin.saveSettings();
 				})
 			);
+	}
+
+	onClose() {
+		this.contentEl.empty();
+		// The list shows the new name.
+		this.tab.update();
 	}
 }
