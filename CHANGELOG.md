@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.0 - 2026-11-13
 
 To-Do Manager is a fork of
 [To-Do to Done Mover](https://github.com/DonnervS/obsidian-todo-done-mover)
@@ -53,7 +53,7 @@ To-Do Manager is a fork of
 
 ### Changed
 
-- Renamed to To-Do Manager, version 0.1.0.
+- Renamed to To-Do Manager.
 - Moving replaces only the changed part of the note, so the cursor, scroll
   position and folds elsewhere stay put.
 - The default completion date is `<small>[{YYYY-MM-DD}]</small>` instead of

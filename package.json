@@ -1,6 +1,6 @@
 {
 	"name": "todo-manager",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"description": "Obsidian plugin that moves completed tasks into a collapsible callout at the end of their own list.",
 	"main": "main.js",
 	"scripts": {
