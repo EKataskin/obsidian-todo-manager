@@ -106,7 +106,7 @@ export default class TodoManagerPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		const data = await this.loadData();
+		const data = (await this.loadData()) as Partial<TodoManagerSettings> | null;
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
 		// A removed setting: it leaves data.json on the next save.
 		delete (this.settings as { appendCompletionDate?: unknown }).appendCompletionDate;

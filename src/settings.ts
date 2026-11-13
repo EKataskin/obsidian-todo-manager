@@ -14,7 +14,7 @@ function markInvalid(input: HTMLElement, invalid: boolean) {
 /** Text of all stylesheets loaded in the app: core, theme and CSS snippets. */
 function loadedCss(): string {
 	let css = "";
-	for (const sheet of Array.from(document.styleSheets)) {
+	for (const sheet of Array.from(activeDocument.styleSheets)) {
 		try {
 			for (const rule of Array.from(sheet.cssRules)) css += rule.cssText + "\n";
 		} catch {

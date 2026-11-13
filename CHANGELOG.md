@@ -58,7 +58,7 @@ To-Do Manager is a fork of
   position and folds elsewhere stay put.
 - The default completion date is `<small>[{YYYY-MM-DD}]</small>` instead of
   `✅ YYYY-MM-DD`.
-- Requires Obsidian 1.1.0.
+- Requires Obsidian 1.3.5.
 - *Move completed tasks* and auto mode move tasks without a completion date.
 - The *Date templates* and *Excluded folders/files* fields have a minimum
   size, so a few lines fit without resizing.
