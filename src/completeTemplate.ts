@@ -7,6 +7,15 @@ import { splitLines } from "./taskParser";
 import { CompleteTemplate, MoveOptions } from "./types";
 
 /**
+ * The templates with the built-in one: it gets the name of `done`, or `done`
+ * goes first when there is none.
+ */
+export function withBuiltinTemplate(templates: CompleteTemplate[], done: CompleteTemplate): CompleteTemplate[] {
+	if (!templates.some((t) => t.builtin)) return [done, ...templates];
+	return templates.map((t) => (t.builtin ? { ...t, name: done.name } : t));
+}
+
+/**
  * The text with the template applied to the task lines: the status char, then
  * the date, then, with `move`, the blocks of these lines go to the done block.
  */

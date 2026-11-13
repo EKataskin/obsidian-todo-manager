@@ -200,9 +200,11 @@ export class TodoManagerSettingTab extends PluginSettingTab {
 		const s = this.plugin.strings;
 		const el = parent.createDiv("todo-manager-complete-template");
 
-		new Setting(el)
+		const nameSetting = new Setting(el)
 			.setName(s.settingTemplateNameName)
 			.addText((text) => {
+				// The built-in template keeps the name of the interface language.
+				text.setDisabled(!!template.builtin);
 				markInvalid(text.inputEl, template.name === "");
 				text.setValue(template.name).onChange(async (value) => {
 					const name = value.trim();
@@ -225,8 +227,10 @@ export class TodoManagerSettingTab extends PluginSettingTab {
 					.setTooltip(s.buttonMoveDown)
 					.setDisabled(this.plugin.settings.completeTemplates.at(-1) === template)
 					.onClick(() => this.moveCompleteTemplate(template, 1))
-			)
-			.addExtraButton((button) =>
+			);
+		// The built-in template cannot be deleted.
+		if (!template.builtin) {
+			nameSetting.addExtraButton((button) =>
 				button
 					.setIcon("trash-2")
 					.setTooltip(s.buttonDeleteTemplate)
@@ -236,6 +240,7 @@ export class TodoManagerSettingTab extends PluginSettingTab {
 						this.display();
 					})
 			);
+		}
 
 		new Setting(el)
 			.setName(s.settingTemplateCharName)

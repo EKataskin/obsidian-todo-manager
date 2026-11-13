@@ -8,7 +8,7 @@ import { isPathExcluded } from "./src/exclusions";
 import { setTaskStatus, taskStatus } from "./src/taskChars";
 import { createStatusIcon, statusChars } from "./src/statusIcon";
 import { formatDate, isDateTemplate, removeDates, setDateStamp, templateLines } from "./src/dateTemplate";
-import { applyCompleteTemplate, undoCompletion } from "./src/completeTemplate";
+import { applyCompleteTemplate, undoCompletion, withBuiltinTemplate } from "./src/completeTemplate";
 import { Lang, Strings, getStrings } from "./src/i18n";
 
 /** Delay before the auto mode reacts, so it does not interrupt typing. */
@@ -106,9 +106,11 @@ export default class TodoManagerPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		const data = await this.loadData();
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
 		// A removed setting: it leaves data.json on the next save.
 		delete (this.settings as { appendCompletionDate?: unknown }).appendCompletionDate;
+		this.settings.completeTemplates = withBuiltinTemplate(this.settings.completeTemplates, this.doneTemplate());
 	}
 
 	async saveSettings() {
@@ -252,8 +254,8 @@ export default class TodoManagerPlugin extends Plugin {
 		);
 	}
 
-	/** The built-in complete template, made of the general settings. */
-	private defaultTemplate(): CompleteTemplate {
+	/** The built-in "Done" complete template as it is on the first run, made of the general settings. */
+	private doneTemplate(): CompleteTemplate {
 		return {
 			name: this.strings.completeDefaultName,
 			// The char Obsidian itself puts on a click in Reading view.
@@ -261,15 +263,16 @@ export default class TodoManagerPlugin extends Plugin {
 			dateTemplate: this.firstDateTemplate(),
 			datePosition: this.settings.datePosition,
 			move: true,
+			builtin: true,
 		};
 	}
 
 	/**
-	 * "Complete by template" with the built-in template first, then the ones of
-	 * the settings, and the undo of a completion last.
+	 * "Complete by template" with the templates of the settings, and the undo of
+	 * a completion last.
 	 */
 	private addCompleteMenu(menu: Menu, editor: Editor, lines: number[]) {
-		const templates = [this.defaultTemplate(), ...this.settings.completeTemplates.filter((t) => t.name && t.char)];
+		const templates = this.settings.completeTemplates.filter((t) => t.name && t.char);
 		const { target } = this.addSubmenu(menu, this.strings.menuCompleteByTemplate, "list-checks");
 		// The status icon, then the name.
 		const title = (char: string, name: string) =>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyCompleteTemplate, undoCompletion } from "./completeTemplate";
+import { applyCompleteTemplate, undoCompletion, withBuiltinTemplate } from "./completeTemplate";
 import { CompleteTemplate, MoveOptions } from "./types";
 
 const OPTS: MoveOptions = {
@@ -36,6 +36,20 @@ describe("applyCompleteTemplate", () => {
 
 	it("changes tasks inside the done block in place", () => {
 		expect(apply(["> [!done]- Done", "> - [x] a"], [1], { char: "-" })).toEqual(["> [!done]- Done", "> - [-] a [10.2026]"]);
+	});
+});
+
+describe("withBuiltinTemplate", () => {
+	const done: CompleteTemplate = { ...TEMPLATE, name: "Выполнено", builtin: true };
+	const other: CompleteTemplate = { ...TEMPLATE, name: "Other", char: "-" };
+
+	it("puts the built-in template first when it is missing", () => {
+		expect(withBuiltinTemplate([other], done)).toEqual([done, other]);
+	});
+
+	it("keeps the built-in template in its place and its settings, only the name changes", () => {
+		const stored = { ...TEMPLATE, name: "Done", char: "+", builtin: true };
+		expect(withBuiltinTemplate([other, stored], done)).toEqual([other, { ...stored, name: "Выполнено" }]);
 	});
 });
 

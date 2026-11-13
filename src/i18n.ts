@@ -20,8 +20,7 @@ const en = {
 	headingDate: "Completion date",
 	headingCompleteTemplates: "Complete templates",
 	settingCompleteTemplatesDesc:
-		'Items of the "Complete by template" editor menu. Each sets the status character, adds a date and moves the task in one step. ' +
-		'"Done" always comes first: it puts "x", adds the date by the first date template and moves the task.',
+		'Items of the "Complete by template" editor menu. Each sets the status character, adds a date and moves the task in one step.',
 	buttonAddTemplate: "Add template",
 	buttonDeleteTemplate: "Delete template",
 	buttonMoveUp: "Move up",
@@ -85,8 +84,7 @@ const de: Strings = {
 	headingDate: "Erledigt-Datum",
 	headingCompleteTemplates: "Erledigt-Vorlagen",
 	settingCompleteTemplatesDesc:
-		"Einträge des Editor-Menüs „Nach Vorlage erledigen\". Jeder setzt das Statuszeichen, fügt ein Datum hinzu und verschiebt die Aufgabe in einem Schritt. " +
-		"„Erledigt\" steht immer an erster Stelle: setzt \"x\", fügt das Datum nach der ersten Datumsvorlage hinzu und verschiebt die Aufgabe.",
+		"Einträge des Editor-Menüs „Nach Vorlage erledigen\". Jeder setzt das Statuszeichen, fügt ein Datum hinzu und verschiebt die Aufgabe in einem Schritt.",
 	buttonAddTemplate: "Vorlage hinzufügen",
 	buttonDeleteTemplate: "Vorlage löschen",
 	buttonMoveUp: "Nach oben",
@@ -147,8 +145,7 @@ const ru: Strings = {
 	headingDate: "Дата выполнения",
 	headingCompleteTemplates: "Шаблоны выполнения",
 	settingCompleteTemplatesDesc:
-		"Пункты меню редактора «Выполнить по шаблону». Каждый за один шаг ставит символ статуса, добавляет дату и переносит задачу. " +
-		"«Выполнено» всегда идёт первым: ставит «x», добавляет дату по первому шаблону даты и переносит задачу.",
+		"Пункты меню редактора «Выполнить по шаблону». Каждый за один шаг ставит символ статуса, добавляет дату и переносит задачу.",
 	buttonAddTemplate: "Добавить шаблон",
 	buttonDeleteTemplate: "Удалить шаблон",
 	buttonMoveUp: "Выше",

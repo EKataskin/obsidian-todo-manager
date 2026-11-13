@@ -104,13 +104,15 @@ German or Russian when Obsidian is set to one of them.
   in one step to the task in the cursor's line, or to every task in the
   selection: sets the status character, adds a date and moves the task to
   the done block. One undo reverts all of it.
-- *Done* always comes first. It is made of the general settings: it puts
-  `x` (as a click in Reading view does), adds the date by the first date
-  template, puts it where *Date position* says, and moves the task.
-- Your own templates follow, from *Complete templates* in the settings.
-  Each has a name, a status character, a date template (empty means no
-  date), a date position and *Move to the done block*. The arrows next
-  to the name change the order of the templates in the menu.
+- The items come from *Complete templates* in the settings. Each has a
+  name, a status character, a date template (empty means no date), a date
+  position and *Move to the done block*. The arrows next to the name
+  change the order of the templates in the menu.
+- The *Done* template is always there. On the first run it is made of the
+  general settings: it puts `x` (as a click in Reading view does), adds
+  the date by the first date template, puts it where *Date position*
+  says, and moves the task. All of it can be changed except the name,
+  which follows the interface language, and it cannot be deleted.
 - The date is always added, even when the task has a date already.
 - Only the changed tasks move, with their sub-tasks and whatever their
   status character. A changed sub-task moves its top-level task only when
@@ -137,7 +139,7 @@ German or Russian when Obsidian is set to one of them.
 | Date position | At the start (after the checkbox) or at the end of the line | end |
 | Date templates | One per line, the date format in braces; the first is used for moved tasks, all are offered in the menu | `<small>[{YYYY-MM-DD}]</small>`, `[{MM.YYYY}]` |
 | Status characters | Characters offered in the *Task status* menu after the open status | `xX-><!/?*nliISpcb"udwkf` (AnuPpuccin) |
-| Complete templates | Items of the *Complete by template* menu after *Done* | none |
+| Complete templates | Items of the *Complete by template* menu | *Done* |
 
 ## Styling the completion date
 

@@ -18,7 +18,7 @@ export interface TodoManagerSettings {
 	menuChars: string;
 	/** Vault paths (folders or files) in which auto mode stays inactive. */
 	excludedPaths: string[];
-	/** Templates of the "Complete by template" menu, after the built-in one. */
+	/** Templates of the "Complete by template" menu, "Done" among them (see withBuiltinTemplate). */
 	completeTemplates: CompleteTemplate[];
 }
 
@@ -45,6 +45,8 @@ export interface CompleteTemplate {
 	datePosition: DatePosition;
 	/** When on, the changed tasks go to the done block, whatever their status. */
 	move: boolean;
+	/** The "Done" template: always there, its name follows the interface language. */
+	builtin?: boolean;
 }
 
 export type DatePosition = "start" | "end";
