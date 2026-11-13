@@ -102,6 +102,7 @@ export class TodoManagerSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 				text.inputEl.rows = 4;
+				text.inputEl.addClass("todo-manager-excluded-paths");
 			});
 
 		new Setting(containerEl).setName(s.headingDate).setHeading();
@@ -137,6 +138,7 @@ export class TodoManagerSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 				text.inputEl.rows = 3;
+				text.inputEl.addClass("todo-manager-date-templates");
 			});
 
 		new Setting(containerEl).setName(s.headingStatusMenu).setHeading();

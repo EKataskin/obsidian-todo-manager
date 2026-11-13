@@ -5,6 +5,18 @@
 	box-shadow: 0 0 0 1px var(--text-error);
 }
 
+/* The date templates field: wide enough for a template like "<small>[{YYYY-MM-DD}]</small>" and a few lines. */
+.todo-manager-date-templates {
+	min-width: 20em;
+	min-height: 10em;
+}
+
+/* The excluded folders/files field: one path per line. */
+.todo-manager-excluded-paths {
+	min-width: 20em;
+	min-height: 6em;
+}
+
 /* Preview of the status chars under the setting's description. */
 .todo-manager-status-preview {
 	display: flex;
