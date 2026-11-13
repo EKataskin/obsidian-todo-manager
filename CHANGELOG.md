@@ -1,8 +1,21 @@
 # Changelog
 
+## 1.0.1 - 2026-11-13
+
+### Changed
+
+- Renamed to ToDo Manager.
+- The settings tab is built with the settings API of Obsidian 1.13. The
+  settings search finds its settings, and an invalid input shows an error
+  under its field.
+- *Complete templates* is a list: `+` adds a template, the cross deletes
+  one, dragging by the handle changes the order. A click on a template
+  opens its fields in a window.
+- Requires Obsidian 1.13.0.
+
 ## 1.0.0 - 2026-11-13
 
-To-Do Manager is a fork of
+ToDo Manager is a fork of
 [To-Do to Done Mover](https://github.com/DonnervS/obsidian-todo-done-mover)
 1.0.4. This section lists the changes since the fork.
 

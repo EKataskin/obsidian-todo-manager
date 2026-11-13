@@ -1,4 +1,4 @@
-# To-Do Manager
+# ToDo Manager
 
 An [Obsidian](https://obsidian.md) plugin that moves completed checkbox tasks,
 including their indented sub-tasks, into a collapsible callout at the end of

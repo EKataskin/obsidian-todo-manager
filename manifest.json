@@ -1,6 +1,6 @@
 {
 	"id": "todo-manager",
-	"name": "To-Do Manager",
+	"name": "ToDo Manager",
 	"version": "1.0.1",
 	"minAppVersion": "1.13.0",
 	"description": "Move completed tasks into a collapsible callout at the end of their own list, and back.",
